@@ -25,5 +25,6 @@ _Диаграммы можно сохранять и редактировать 
   ![ERD точки](https://github.com/ByeLarry/indcidents-marks-service/assets/120035099/5f73b2a3-3c2a-4f66-846a-b6136be328cf)
 
 - ### Коммуникация клиента и сервиса точек (инцидентов)
-  ![Коммуникация клиента и сервиса инцидентов](https://github.com/ByeLarry/indcidents-marks-service/assets/120035099/5b81ec10-9df1-430a-8662-b65a1d137368)
+  ![Коммуникация клиента и сервиса инцидентов](https://github.com/ByeLarry/indcidents-marks-service/assets/120035099/091906ad-5a97-406e-9e90-0326961e17db)
+
 
