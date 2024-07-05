@@ -26,4 +26,9 @@ export class MarksGateway {
   mapInit(@MessageBody() data: CoordsDto, @ConnectedSocket() socket: Socket) {
     return this.marksService.mapInit(socket, data);
   }
+
+  @SubscribeMessage(MsgMarksEnum.MARK_GET_SEND)
+  markGet(@MessageBody() data: string, @ConnectedSocket() socket: Socket) {
+    return this.marksService.markGet(socket, Number(data));
+  }
 }

@@ -27,8 +27,16 @@ export class MarksService {
         data.lng,
         data.lat,
       ]);
-      console.log(marks);
       return socket.emit(MsgMarksEnum.MAP_INIT_RECV, marks);
+    } catch (e) {
+      console.log(e);
+    }
+  }
+
+  async markGet(socket: Socket, data: number) {
+    try {
+      const mark = await this.markRep.findOne({ where: { id: data } });
+      return socket.emit(MsgMarksEnum.MARK_GET_RECV, mark);
     } catch (e) {
       console.log(e);
     }
