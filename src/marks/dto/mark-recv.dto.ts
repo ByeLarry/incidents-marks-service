@@ -4,8 +4,13 @@ export interface MarkRecvDto {
   lng: number;
   title: string;
   description: string;
-  categoryId: number;
+  category: {
+    id: number;
+    name: string;
+  };
   createdAt: Date;
   userId: string;
   distance: number;
+  verified: number;
+  isMyVerify: boolean;
 }

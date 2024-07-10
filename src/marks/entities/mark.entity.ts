@@ -3,11 +3,13 @@ import {
   CreateDateColumn,
   Entity,
   JoinColumn,
+  OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { Category } from './category.entity';
+import { Verification } from './verification.entity';
 
 @Entity()
 export class Mark {
@@ -29,13 +31,21 @@ export class Mark {
   @Column()
   userId: string;
 
-  @Column({})
+  @Column()
   title: string;
 
   @Column({ length: 500 })
   description: string;
 
+  // @Column({ default: 0 })
+  // verified: number;
+
   @OneToOne(() => Category)
   @JoinColumn()
   category: Category;
+
+  @OneToMany(() => Verification, (verification) => verification.mark, {
+    cascade: true,
+  })
+  verifications: Verification[];
 }

@@ -1,16 +1,14 @@
-import { WebSocketGateway, MessageBody } from '@nestjs/websockets';
+import { MessageBody } from '@nestjs/websockets';
 import { MarksService } from './marks.service';
 import { MsgMarksEnum } from 'src/utils/msg.marks.enum';
 import { CoordsDto } from './dto/coords.dto';
 import { MessagePattern } from '@nestjs/microservices';
+import { Controller } from '@nestjs/common';
+import { VerifyMarkDto } from './dto/verify-mark.dto';
 import { MarkDto } from './dto/mark.dto';
 
-@WebSocketGateway({
-  cors: {
-    origin: 'http://localhost:4000',
-  },
-})
-export class MarksGateway {
+@Controller()
+export class MarksController {
   constructor(private readonly marksService: MarksService) {}
 
   @MessagePattern({ cmd: MsgMarksEnum.TEST_SEND })
@@ -26,5 +24,15 @@ export class MarksGateway {
   @MessagePattern({ cmd: MsgMarksEnum.MARK_GET_SEND })
   markGet(@MessageBody() data: MarkDto) {
     return this.marksService.markGet(data);
+  }
+
+  @MessagePattern({ cmd: MsgMarksEnum.MARK_VERIFY_TRUE_SEND })
+  verifyTrue(@MessageBody() data: VerifyMarkDto) {
+    return this.marksService.verifyTrue(data);
+  }
+
+  @MessagePattern({ cmd: MsgMarksEnum.MARK_VERIFY_FALSE_SEND })
+  verifyFalse(@MessageBody() data: VerifyMarkDto) {
+    return this.marksService.verifyFalse(data);
   }
 }
