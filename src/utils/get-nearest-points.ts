@@ -33,3 +33,13 @@ export const checkApproximateDistance = `
         )
         LIMIT 1
       `;
+
+export const getDistance = `
+      SELECT 
+        ST_Distance(
+          ST_SetSRID(ST_MakePoint($1, $2), 4326)::geography,
+          ST_SetSRID(ST_MakePoint(lng, lat), 4326)::geography
+        ) AS distance
+      FROM marks.mark
+      WHERE mark_id = $3
+`;

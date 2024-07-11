@@ -6,7 +6,8 @@ import { Category } from './entities/category.entity';
 import { MoreThanOrEqual, Repository } from 'typeorm';
 import {
   checkApproximateDistance,
-  getNearestPointsWithDistance,
+  getDistance,
+  getNearestPoints,
 } from 'src/utils/get-nearest-points';
 import { VerifyMarkDto } from './dto/verify-mark.dto';
 import { Verification } from './entities/verification.entity';
@@ -32,7 +33,7 @@ export class MarksService {
 
   async marksGet(data: CoordsDto): Promise<MarkRecvDto[] | string> {
     try {
-      const marks = await this.markRep.query(getNearestPointsWithDistance, [
+      const marks = await this.markRep.query(getNearestPoints, [
         data.lng,
         data.lat,
       ]);
@@ -54,13 +55,23 @@ export class MarksService {
         where: { mark: { id: Number(data.markId) } },
       });
 
+      const distance: Array<{ distance: number }> = await this.markRep.query(
+        getDistance,
+        [data.lat, data.lng, data.markId],
+      );
+
       const userVerification = await this.verificationRep.findOne({
         where: {
           mark: { id: Number(data.markId) },
           userId: data.userId,
         },
       });
-      return { ...mark, verified, isMyVerify: !!userVerification };
+      return {
+        ...mark,
+        verified,
+        isMyVerify: !!userVerification,
+        distance: distance[0].distance,
+      };
     } catch (e) {
       return '500';
     }

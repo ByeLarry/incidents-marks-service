@@ -6,10 +6,11 @@ import { Mark } from './entities/mark.entity';
 import { Category } from './entities/category.entity';
 import { MarksController } from './marks.controller';
 import { Verification } from './entities/verification.entity';
+import { MarkCleanupService } from './mark-cleanup.service';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Mark, Category, Verification])],
   controllers: [MarksController],
-  providers: [MarksGateway, MarksService],
+  providers: [MarksGateway, MarksService, MarkCleanupService],
 })
 export class MarksModule {}
