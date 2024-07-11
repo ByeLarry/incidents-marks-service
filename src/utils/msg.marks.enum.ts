@@ -15,4 +15,8 @@ export enum MsgMarksEnum {
   MARK_VERIFY_FALSE_RECV = 'mark-verify-false-recv',
   GET_VERIFY_SEND = 'get-verify-send',
   GET_VERIFY_RECV = 'get-verify-recv',
+  CATEGORIES_SEND = 'categories-send',
+  CATEGORIES_RECV = 'categories-recv',
+  CREATE_MARK_SEND = 'create-mark-send',
+  CREATE_MARK_RECV = 'create-mark-recv',
 }

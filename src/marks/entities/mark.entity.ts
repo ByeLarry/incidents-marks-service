@@ -2,9 +2,8 @@ import {
   Column,
   CreateDateColumn,
   Entity,
-  JoinColumn,
+  ManyToOne,
   OneToMany,
-  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -13,7 +12,7 @@ import { Verification } from './verification.entity';
 
 @Entity()
 export class Mark {
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn({ name: 'mark_id' })
   id: number;
 
   @Column({ type: 'double precision' })
@@ -28,20 +27,16 @@ export class Mark {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @Column()
+  @Column({ nullable: false, length: 100 })
   userId: string;
 
-  @Column()
+  @Column({ length: 100, nullable: false })
   title: string;
 
-  @Column({ length: 500 })
+  @Column({ length: 200 })
   description: string;
 
-  // @Column({ default: 0 })
-  // verified: number;
-
-  @OneToOne(() => Category)
-  @JoinColumn()
+  @ManyToOne(() => Category, { eager: true })
   category: Category;
 
   @OneToMany(() => Verification, (verification) => verification.mark, {

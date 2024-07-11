@@ -2,9 +2,11 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { Mark } from './mark.entity';
 
 @Entity()
 export class Category {
@@ -19,4 +21,7 @@ export class Category {
 
   @Column()
   name: string;
+
+  @OneToMany(() => Mark, (mark) => mark.category)
+  marks: Mark[];
 }

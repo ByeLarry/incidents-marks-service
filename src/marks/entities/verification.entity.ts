@@ -9,7 +9,7 @@ import { Mark } from './mark.entity';
 
 @Entity()
 export class Verification {
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn({ name: 'verification_id' })
   id: number;
 
   @Column()
@@ -18,6 +18,8 @@ export class Verification {
   @CreateDateColumn()
   createdAt: Date;
 
-  @ManyToOne(() => Mark, (mark) => mark.verifications)
+  @ManyToOne(() => Mark, (mark) => mark.verifications, {
+    onDelete: 'CASCADE',
+  })
   mark: Mark;
 }

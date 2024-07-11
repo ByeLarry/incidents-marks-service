@@ -6,6 +6,7 @@ import { MessagePattern } from '@nestjs/microservices';
 import { Controller } from '@nestjs/common';
 import { VerifyMarkDto } from './dto/verify-mark.dto';
 import { MarkDto } from './dto/mark.dto';
+import { CreateMarkDto } from './dto/create-mark.dto';
 
 @Controller()
 export class MarksController {
@@ -34,5 +35,15 @@ export class MarksController {
   @MessagePattern({ cmd: MsgMarksEnum.MARK_VERIFY_FALSE_SEND })
   verifyFalse(@MessageBody() data: VerifyMarkDto) {
     return this.marksService.verifyFalse(data);
+  }
+
+  @MessagePattern({ cmd: MsgMarksEnum.CATEGORIES_SEND })
+  getCategories() {
+    return this.marksService.getCategories();
+  }
+
+  @MessagePattern({ cmd: MsgMarksEnum.CREATE_MARK_SEND })
+  createMark(data: CreateMarkDto) {
+    return this.marksService.createMark(data);
   }
 }
