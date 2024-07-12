@@ -68,6 +68,7 @@ export class MarksService {
       });
       return {
         ...mark,
+        categoryId: mark.category.id,
         verified,
         isMyVerify: !!userVerification,
         distance: distance[0].distance,
