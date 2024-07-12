@@ -19,7 +19,7 @@ export class Category {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @Column()
+  @Column({ length: 100 })
   name: string;
 
   @OneToMany(() => Mark, (mark) => mark.category)

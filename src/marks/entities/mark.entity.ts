@@ -27,7 +27,7 @@ export class Mark {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @Column({ nullable: false, length: 100 })
+  @Column({ length: 100 })
   userId: string;
 
   @Column({ length: 100, nullable: false })

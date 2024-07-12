@@ -12,7 +12,7 @@ export class Verification {
   @PrimaryGeneratedColumn({ name: 'verification_id' })
   id: number;
 
-  @Column()
+  @Column({ length: 100 })
   userId: string;
 
   @CreateDateColumn()
