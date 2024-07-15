@@ -131,7 +131,7 @@ export class MarksService {
   async getCategories(): Promise<CategoryDto[] | string> {
     try {
       const categories: CategoryDto[] = await this.categoryRep.find({
-        select: ['id', 'name'],
+        select: ['id', 'name', 'color'],
       });
 
       if (!categories) return '404';
@@ -185,6 +185,7 @@ export class MarksService {
         lat: mark.lat,
         lng: mark.lng,
         categoryId: mark.category.id,
+        color: mark.category.color,
       };
       return markRecv;
     } catch (e) {

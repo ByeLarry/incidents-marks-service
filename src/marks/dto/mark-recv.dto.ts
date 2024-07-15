@@ -7,6 +7,7 @@ export interface MarkRecvDto {
   category?: {
     id: number;
     name: string;
+    color: string;
   };
   createdAt?: Date;
   userId?: string;
@@ -14,4 +15,5 @@ export interface MarkRecvDto {
   verified?: number;
   isMyVerify?: boolean;
   categoryId?: number;
+  color?: string;
 }

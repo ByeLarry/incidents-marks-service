@@ -1,5 +1,5 @@
 export const getNearestPoints = `
-  SELECT lng, lat, mark_id AS "id", "categoryId"
+  SELECT sorted_marks.lng, sorted_marks.lat, sorted_marks.mark_id AS "id", sorted_marks."categoryId", category.color
   FROM (
     SELECT lng, lat, mark_id, "categoryId",
       ST_Distance(
@@ -8,7 +8,8 @@ export const getNearestPoints = `
       ) AS distance
     FROM marks.mark
   ) AS sorted_marks
-  ORDER BY distance
+  JOIN marks.category ON sorted_marks."categoryId" = category.category_id
+  ORDER BY sorted_marks.distance
   LIMIT 50;
 `;
 

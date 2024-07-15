@@ -22,6 +22,9 @@ export class Category {
   @Column({ length: 100 })
   name: string;
 
+  @Column({ nullable: true, length: 20 })
+  color: string;
+
   @OneToMany(() => Mark, (mark) => mark.category)
   marks: Mark[];
 }
