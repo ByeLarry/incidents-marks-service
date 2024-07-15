@@ -22,7 +22,7 @@ npm run start:dev
 _Диаграммы можно сохранять и редактировать в ***[draw.io](https://app.diagrams.net/)***_
   
 - ### ER-диагрмма 
-  ![Отношение сущностей (точки)](https://github.com/user-attachments/assets/512250b1-5eaf-4707-a744-620933d709b3)
+ ![Отношение сущностей (точки)](https://github.com/user-attachments/assets/a731f019-a763-46c9-b132-a2ea4f9b7dab)
 
 
 - ### Коммуникация клиента и сервиса точек (инцидентов)
