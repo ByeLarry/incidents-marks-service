@@ -152,7 +152,7 @@ export class MarksService {
       const checkMark = await this.markRep.query(checkApproximateDistance, [
         data.lng,
         data.lat,
-        50,
+        25,
       ]);
       if (checkMark.length > 0) return '409';
 
