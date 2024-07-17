@@ -28,5 +28,10 @@ _Диаграммы можно сохранять и редактировать 
 - ### Коммуникация клиента и сервиса точек (инцидентов)
   ![Коммуникация клиента и сервиса инцидентов](https://github.com/user-attachments/assets/686787f9-6b53-407e-87f9-8bfe61007320)
 
+## Ссылки
+
+- #### Клиентская часть:  *https://github.com/ByeLarry/incidents-frontend*
+- #### API-шлюз:  *https://github.com/ByeLarry/incidents-gateway*
+- #### Сервис авторизации:  *https://github.com/ByeLarry/incidents-auth-service*
 
 
