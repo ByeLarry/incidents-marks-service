@@ -16,9 +16,9 @@ export class MarkCleanupService {
     const twelveHoursAgo = new Date(Date.now() - 12 * 60 * 60 * 1000);
     try {
       await this.markRepository.delete({ createdAt: LessThan(twelveHoursAgo) });
-      console.log(Date.now(), ' Старые записи успешно удалены');
+      console.log(Date.now(), ' Old marks deleted');
     } catch (error) {
-      console.error(Date.now(), ' Ошибка при удалении старых записей:', error);
+      console.error(Date.now(), ' Error deleting old marks:', error);
     }
   }
 }
