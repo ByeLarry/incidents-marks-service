@@ -9,6 +9,7 @@
 
 ## Установка
 
+### Локально
 ```bash
 # Установка зависимостей
 npm install
@@ -17,6 +18,11 @@ npm install
 npm run start:dev
 ```
 
+### Docker 
+```bash
+# Создание и запуск docker сервисов
+docker-compose up -d
+```
 ## Проектирование
 
 _Диаграммы можно сохранять и редактировать в ***[draw.io](https://app.diagrams.net/)***_
