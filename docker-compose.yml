@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  marks:
+    container_name: incidents-marks
+    build: .
+    ports:
+      - "4444:4444"
+    volumes:
+      - ./logs:/usr/src/app/logs
+    environment:
+      - NODE_ENV=production
+      - HOST=0.0.0.0
+      - PORT=4444
+      - DB_USERNAME=root
+      - DB_PASSWORD=root
+      - DB_NAME=incidents-marks
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_SCHEMA=public
+    depends_on:
+      - postgres
+  postgres:
+    container_name: incidents-postgres
+    image: "postgis/postgis"
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: incidents-marks
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./postgres-data:/var/lib/postgresql/data
+
+

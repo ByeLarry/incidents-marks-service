@@ -6,9 +6,9 @@ export const getNearestPoints = `
         ST_SetSRID(ST_MakePoint($1, $2), 4326)::geography,
         ST_SetSRID(ST_MakePoint(lng, lat), 4326)::geography
       ) AS distance
-    FROM marks.mark
+    FROM ${process.env.DB_SCHEMA}.mark
   ) AS sorted_marks
-  JOIN marks.category ON sorted_marks."categoryId" = category.category_id
+  JOIN ${process.env.DB_SCHEMA}.category ON sorted_marks."categoryId" = category.category_id
   ORDER BY sorted_marks.distance
   LIMIT 50;
 `;
@@ -19,14 +19,14 @@ export const getNearestPointsWithDistance = `
           ST_SetSRID(ST_MakePoint($1, $2), 4326)::geography,
           ST_SetSRID(ST_MakePoint(lng, lat), 4326)::geography
         ) AS distance
-      FROM marks.mark
+      FROM ${process.env.DB_SCHEMA}.mark
       ORDER BY distance
       LIMIT 50;
 `;
 
 export const checkApproximateDistance = `
         SELECT *
-        FROM marks.mark
+        FROM ${process.env.DB_SCHEMA}.mark
         WHERE ST_DWithin(
           ST_SetSRID(ST_MakePoint($1, $2), 4326)::geography,
           ST_SetSRID(ST_MakePoint(lng, lat), 4326)::geography,
@@ -41,6 +41,6 @@ export const getDistance = `
           ST_SetSRID(ST_MakePoint($1, $2), 4326)::geography,
           ST_SetSRID(ST_MakePoint(lng, lat), 4326)::geography
         ) AS distance
-      FROM marks.mark
+      FROM ${process.env.DB_SCHEMA}.mark
       WHERE mark_id = $3
 `;
