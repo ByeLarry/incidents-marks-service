@@ -18,13 +18,13 @@ export class MarksController {
   }
 
   @MessagePattern({ cmd: MsgMarksEnum.MAP_INIT_SEND })
-  marksGet(@MessageBody() data: CoordsDto) {
-    return this.marksService.marksGet(data);
+  getMarks(@MessageBody() data: CoordsDto) {
+    return this.marksService.getMarks(data);
   }
 
   @MessagePattern({ cmd: MsgMarksEnum.MARK_GET_SEND })
-  markGet(@MessageBody() data: MarkDto) {
-    return this.marksService.markGet(data);
+  getMark(@MessageBody() data: MarkDto) {
+    return this.marksService.getMark(data);
   }
 
   @MessagePattern({ cmd: MsgMarksEnum.MARK_VERIFY_TRUE_SEND })

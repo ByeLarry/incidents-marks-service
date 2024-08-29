@@ -31,7 +31,7 @@ export class MarksService {
     return `[From marks]: ${data}`;
   }
 
-  async marksGet(data: CoordsDto): Promise<MarkRecvDto[] | string> {
+  async getMarks(data: CoordsDto): Promise<MarkRecvDto[] | string> {
     try {
       const marks = await this.markRep.query(getNearestPoints, [
         data.lng,
@@ -43,7 +43,7 @@ export class MarksService {
     }
   }
 
-  async markGet(data: MarkDto): Promise<MarkRecvDto | string> {
+  async getMark(data: MarkDto): Promise<MarkRecvDto | string> {
     try {
       const mark = await this.markRep.findOne({
         where: { id: Number(data.markId) },
