@@ -3,7 +3,7 @@ import { CoordsDto } from './dto/coords.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Mark } from './entities/mark.entity';
 import { Category } from './entities/category.entity';
-import { MoreThanOrEqual, Repository } from 'typeorm';
+import { DataSource, MoreThanOrEqual, Repository } from 'typeorm';
 import {
   checkApproximateDistance,
   getDistance,
@@ -24,6 +24,7 @@ export class MarksService {
     private readonly categoryRep: Repository<Category>,
     @InjectRepository(Verification)
     private readonly verificationRep: Repository<Verification>,
+    private readonly dataSource: DataSource,
   ) {}
 
   test(data: string) {
@@ -81,50 +82,69 @@ export class MarksService {
   async verifyTrue(
     data: VerifyMarkDto,
   ): Promise<{ verified: number } | string> {
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
     try {
-      const mark = await this.markRep.findOne({
+      const mark = await queryRunner.manager.findOne(Mark, {
         where: { id: data.markId },
       });
 
-      if (!mark) return '404';
+      if (!mark) {
+        await queryRunner.rollbackTransaction();
+        return '404';
+      }
 
       const newVerification = new Verification();
       newVerification.mark = mark;
       newVerification.userId = data.userId;
       newVerification.createdAt = new Date();
-      await this.verificationRep.save(newVerification);
+      await queryRunner.manager.save(newVerification);
 
-      const verified = await this.verificationRep.count({
+      const verified = await queryRunner.manager.count(Verification, {
         where: { mark: { id: Number(data.markId) } },
       });
 
+      await queryRunner.commitTransaction();
       return { verified };
     } catch (e) {
       return '500';
+    } finally {
+      await queryRunner.release();
     }
   }
 
   async verifyFalse(
     data: VerifyMarkDto,
   ): Promise<{ verified: number } | string> {
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
     try {
-      const mark = await this.markRep.findOne({
+      const mark = await queryRunner.manager.findOne(Mark, {
         where: { id: data.markId },
       });
 
-      if (!mark) return '404';
+      if (!mark) {
+        queryRunner.rollbackTransaction();
+        return '404';
+      }
 
-      await this.verificationRep.delete({
+      await queryRunner.manager.delete(Verification, {
         mark: { id: data.markId },
       });
 
-      const verified = await this.verificationRep.count({
+      const verified = await queryRunner.manager.count(Verification, {
         where: { mark: { id: Number(data.markId) } },
       });
 
+      await queryRunner.commitTransaction();
       return { verified };
     } catch (e) {
       return '500';
+    } finally {
+      await queryRunner.release();
     }
   }
 
@@ -142,24 +162,33 @@ export class MarksService {
   }
 
   async createMark(data: CreateMarkDto): Promise<MarkRecvDto | string> {
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
     try {
-      const category = await this.categoryRep.findOne({
+      const category = await queryRunner.manager.findOne(Category, {
         where: { id: data.categoryId },
       });
 
-      if (!category) return '404';
+      if (!category) {
+        await queryRunner.rollbackTransaction();
+        return '404';
+      }
 
-      const checkMark = await this.markRep.query(checkApproximateDistance, [
-        data.lng,
-        data.lat,
-        25,
-      ]);
-      if (checkMark.length > 0) return '409';
+      const checkMark = await queryRunner.manager.query(
+        checkApproximateDistance,
+        [data.lng, data.lat, 25],
+      );
+
+      if (checkMark.length > 0) {
+        await queryRunner.rollbackTransaction();
+        return '409';
+      }
 
       const twelveHoursAgo = new Date();
       twelveHoursAgo.setHours(twelveHoursAgo.getHours() - 12);
 
-      const countLastTwelveHoursMarks = await this.markRep.count({
+      const countLastTwelveHoursMarks = await queryRunner.manager.count(Mark, {
         where: {
           userId: data.userId,
           createdAt: MoreThanOrEqual(twelveHoursAgo),
@@ -167,6 +196,7 @@ export class MarksService {
       });
 
       if (countLastTwelveHoursMarks >= 5) {
+        await queryRunner.rollbackTransaction();
         return '403';
       }
 
@@ -177,9 +207,8 @@ export class MarksService {
       mark.description = data.description;
       mark.userId = data.userId;
       mark.category = category;
-
-      await this.markRep.save(mark);
-
+      await queryRunner.manager.save(mark);
+      await queryRunner.commitTransaction();
       const markRecv: MarkRecvDto = {
         id: mark.id,
         lat: mark.lat,
@@ -189,7 +218,10 @@ export class MarksService {
       };
       return markRecv;
     } catch (e) {
+      await queryRunner.rollbackTransaction();
       return '500';
+    } finally {
+      await queryRunner.release();
     }
   }
 }
