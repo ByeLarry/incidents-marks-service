@@ -18,7 +18,7 @@ services:
       - DB_HOST=postgres
       - DB_PORT=5432
       - DB_SCHEMA=public
-      - RMQ_HOST=amqp://localhost:5672
+      - RMQ_HOST=amqp://admin:admin@host.docker.internal:5672
     depends_on:
       - postgres
   postgres:
