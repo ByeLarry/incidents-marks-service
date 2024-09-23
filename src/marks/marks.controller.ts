@@ -1,20 +1,15 @@
 import { MarksService } from './marks.service';
-import { MsgMarksEnum } from 'src/utils/msg.marks.enum';
+import { MsgMarksEnum } from '../utils/msgMarks.enum';
 import { CoordsDto } from './dto/coords.dto';
 import { MessagePattern, Payload } from '@nestjs/microservices';
 import { Controller } from '@nestjs/common';
-import { VerifyMarkDto } from './dto/verify-mark.dto';
+import { VerifyMarkDto } from './dto/verifyMark.dto';
 import { MarkDto } from './dto/mark.dto';
-import { CreateMarkDto } from './dto/create-mark.dto';
+import { CreateMarkDto } from './dto/createMark.dto';
 
 @Controller()
 export class MarksController {
   constructor(private readonly marksService: MarksService) {}
-
-  @MessagePattern(MsgMarksEnum.TEST_SEND)
-  test(@Payload() data: string) {
-    return this.marksService.test(data);
-  }
 
   @MessagePattern(MsgMarksEnum.MAP_INIT_SEND)
   getMarks(@Payload() data: CoordsDto) {

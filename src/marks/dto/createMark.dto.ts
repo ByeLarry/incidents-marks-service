@@ -1,14 +1,14 @@
 import { Transform } from 'class-transformer';
 import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
 
-export class MarkDto {
+export class CreateMarkDto {
   @IsString()
   @IsNotEmpty()
   userId: string;
 
   @IsString()
   @IsNotEmpty()
-  markId: string;
+  csrf_token: string;
 
   @IsNumber()
   @IsNotEmpty()
@@ -19,4 +19,16 @@ export class MarkDto {
   @IsNotEmpty()
   @Transform(({ value }) => Number(value), { toClassOnly: true })
   lng: number;
+
+  @IsString()
+  @IsNotEmpty()
+  title: string;
+
+  @IsString()
+  description?: string;
+
+  @IsNumber()
+  @IsNotEmpty()
+  @Transform(({ value }) => Number(value), { toClassOnly: true })
+  categoryId: number;
 }

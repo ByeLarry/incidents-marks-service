@@ -1,17 +1,17 @@
 import { Transform } from 'class-transformer';
 import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
 
-export class CategoryDto {
+export class VerifyMarkDto {
   @IsNumber()
   @IsNotEmpty()
   @Transform(({ value }) => Number(value), { toClassOnly: true })
-  id: number;
+  markId: number;
 
   @IsString()
   @IsNotEmpty()
-  name: string;
+  userId: string;
 
   @IsString()
   @IsNotEmpty()
-  color: string;
+  csrf_token: string;
 }

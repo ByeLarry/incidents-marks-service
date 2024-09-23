@@ -1,8 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { LessThan, Repository } from 'typeorm';
-import { Mark } from './entities/mark.entity';
 import * as cron from 'node-cron';
+import { Mark } from '../marks/entities/mark.entity';
+import { DateEnum } from '../utils/date.enum';
 
 @Injectable()
 export class MarkCleanupService {
@@ -13,7 +14,7 @@ export class MarkCleanupService {
     cron.schedule('0 * * * *', this.cleanupOldMarks.bind(this));
   }
   async cleanupOldMarks() {
-    const twelveHoursAgo = new Date(Date.now() - 12 * 60 * 60 * 1000);
+    const twelveHoursAgo = new Date(Date.now() - DateEnum.ONE_DAY);
     try {
       await this.markRepository.delete({ createdAt: LessThan(twelveHoursAgo) });
       console.log(Date.now(), ' Old marks deleted');
