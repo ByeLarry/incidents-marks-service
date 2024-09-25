@@ -1,11 +1,11 @@
 import { MarksService } from './marks.service';
-import { MsgMarksEnum } from '../utils/msgMarks.enum';
+import { MsgMarksEnum } from '../libs/enums/message-marks.enum';
 import { CoordsDto } from './dto/coords.dto';
 import { MessagePattern, Payload } from '@nestjs/microservices';
 import { Controller } from '@nestjs/common';
-import { VerifyMarkDto } from './dto/verifyMark.dto';
+import { VerifyMarkDto } from './dto/verify-mark.dto';
 import { MarkDto } from './dto/mark.dto';
-import { CreateMarkDto } from './dto/createMark.dto';
+import { CreateMarkDto } from './dto/create-mark.dto';
 
 @Controller()
 export class MarksController {

@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { CustomSqlQueryService } from '../services/customSqlQuery.service';
+import { CustomSqlQueryService } from '.';
 
 describe('CustomSqlQueryService', () => {
   let service: CustomSqlQueryService;

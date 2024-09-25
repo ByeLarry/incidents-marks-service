@@ -2,8 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { LessThan, Repository } from 'typeorm';
 import * as cron from 'node-cron';
-import { Mark } from '../marks/entities/mark.entity';
-import { DateEnum } from '../utils/date.enum';
+import { Mark } from '../../marks/entities/mark.entity';
+import { DateEnum } from '../enums/date.enum';
 
 @Injectable()
 export class MarkCleanupService {

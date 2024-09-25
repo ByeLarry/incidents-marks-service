@@ -1,8 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Mark } from '../marks/entities/mark.entity';
-import { MarkCleanupService } from '../services/markCleanup.service';
+import { MarkCleanupService } from '.';
+import { Mark } from '../../marks/entities';
 
 describe('MarkCleanupService', () => {
   let service: MarkCleanupService;

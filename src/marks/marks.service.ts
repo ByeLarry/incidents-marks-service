@@ -5,16 +5,16 @@ import { Mark } from './entities/mark.entity';
 import { Category } from './entities/category.entity';
 import { DataSource, MoreThanOrEqual, Repository } from 'typeorm';
 
-import { VerifyMarkDto } from './dto/verifyMark.dto';
+import { VerifyMarkDto } from './dto/verify-mark.dto';
 import { Verification } from './entities/verification.entity';
 import { MarkDto } from './dto/mark.dto';
 import { CategoryDto } from './dto/categories.dto';
-import { MarkRecvDto } from './dto/markRecv.dto';
-import { CreateMarkDto } from './dto/createMark.dto';
-import { MicroserviceResponseStatus } from './dto/microserviceResponseStatus.dto';
-import { MicroserviceResponseStatusFabric } from '../utils/microserviceResponseStatusFabric.util';
-import { HttpStatusExtends } from '../utils/extendsHttpStatus.enum';
-import { CustomSqlQueryService } from '../services/customSqlQuery.service';
+import { MarkRecvDto } from './dto/mark-recv.dto';
+import { CreateMarkDto } from './dto/create-mark.dto';
+import { MicroserviceResponseStatus } from './dto/microservice-response-status.dto';
+import { MicroserviceResponseStatusFabric } from '../libs/utils/microservice-response-status-fabric.util';
+import { HttpStatusExtends } from '../libs/enums/extends-http-status.enum';
+import { CustomSqlQueryService } from '../libs/services/custom-sql-query.service';
 import { ConfigService } from '@nestjs/config';
 
 type AsyncFunction<T> = () => Promise<T>;

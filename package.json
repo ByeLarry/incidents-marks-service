@@ -72,7 +72,8 @@
       ".*\\.entity\\.ts$",
       ".*\\.util\\.ts$",
       ".*\\.module\\.ts$",
-      ".*main.ts$"
+      ".*main.ts$",
+      ".*interfaces.ts$"
     ],
     "moduleFileExtensions": [
       "js",

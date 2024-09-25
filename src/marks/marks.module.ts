@@ -5,8 +5,8 @@ import { Mark } from './entities/mark.entity';
 import { Category } from './entities/category.entity';
 import { MarksController } from './marks.controller';
 import { Verification } from './entities/verification.entity';
-import { CustomSqlQueryService } from '../services/customSqlQuery.service';
-import { MarkCleanupService } from '../services/markCleanup.service';
+import { CustomSqlQueryService } from '../libs/services/custom-sql-query.service';
+import { MarkCleanupService } from '../libs/services/mark-cleanup.service';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Mark, Category, Verification])],

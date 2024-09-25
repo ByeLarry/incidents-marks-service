@@ -2,8 +2,8 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { MarksController } from '../marks/marks.controller';
 import { MarksService } from '../marks/marks.service';
 import { CoordsDto } from '../marks/dto/coords.dto';
-import { VerifyMarkDto } from '../marks/dto/verifyMark.dto';
-import { CreateMarkDto } from '../marks/dto/createMark.dto';
+import { VerifyMarkDto } from './dto/verify-mark.dto';
+import { CreateMarkDto } from './dto/create-mark.dto';
 import { MarkDto } from '../marks/dto/mark.dto';
 
 describe('MarksController', () => {

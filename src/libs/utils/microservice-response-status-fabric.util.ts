@@ -1,5 +1,5 @@
-import { MicroserviceResponseStatus } from '../marks/dto/microserviceResponseStatus.dto';
-import { HttpStatusExtends } from './extendsHttpStatus.enum';
+import { MicroserviceResponseStatus } from '../../marks/dto/microservice-response-status.dto';
+import { HttpStatusExtends } from '../enums/extends-http-status.enum';
 
 export class MicroserviceResponseStatusFabric {
   static create(

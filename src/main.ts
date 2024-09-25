@@ -2,7 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { LoggingInterceptor } from './interceptors/logger.interceptor';
-import { MARKS_RMQ_QUEUE } from './utils/consts.util';
+import { MARKS_RMQ_QUEUE } from './libs/utils/consts.util';
 import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
