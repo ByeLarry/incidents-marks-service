@@ -6,10 +6,6 @@ export class CreateMarkDto {
   @IsNotEmpty()
   userId: string;
 
-  @IsString()
-  @IsNotEmpty()
-  csrf_token: string;
-
   @IsNumber()
   @IsNotEmpty()
   @Transform(({ value }) => Number(value), { toClassOnly: true })

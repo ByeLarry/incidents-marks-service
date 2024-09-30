@@ -7,10 +7,16 @@ import { MarksController } from './marks.controller';
 import { Verification } from './entities/verification.entity';
 import { CustomSqlQueryService } from '../libs/services/custom-sql-query.service';
 import { MarkCleanupService } from '../libs/services/mark-cleanup.service';
+import { AppLoggerService } from '../libs/helpers';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Mark, Category, Verification])],
   controllers: [MarksController],
-  providers: [MarksService, MarkCleanupService, CustomSqlQueryService],
+  providers: [
+    MarksService,
+    MarkCleanupService,
+    CustomSqlQueryService,
+    AppLoggerService,
+  ],
 })
 export class MarksModule {}

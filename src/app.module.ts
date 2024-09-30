@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MarksModule } from './marks/marks.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { PRODACTION_ENV } from './libs/utils';
 
 @Module({
   imports: [
@@ -18,7 +19,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
         database: configService.get('DB_NAME'),
         entities: [__dirname + '/**/*.entity{.ts,.js}'],
         synchronize:
-          configService.get('NODE_ENV') === 'production' ? false : true,
+          configService.get('NODE_ENV') === PRODACTION_ENV ? false : true,
         schema: configService.get('DB_SCHEMA'),
       }),
       inject: [ConfigService],

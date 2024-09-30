@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpStatus, Injectable } from '@nestjs/common';
 import { CoordsDto } from './dto/coords.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Mark } from './entities/mark.entity';
@@ -13,7 +13,6 @@ import { MarkRecvDto } from './dto/mark-recv.dto';
 import { CreateMarkDto } from './dto/create-mark.dto';
 import { MicroserviceResponseStatus } from './dto/microservice-response-status.dto';
 import { MicroserviceResponseStatusFabric } from '../libs/utils/microservice-response-status-fabric.util';
-import { HttpStatusExtends } from '../libs/enums/extends-http-status.enum';
 import { CustomSqlQueryService } from '../libs/services/custom-sql-query.service';
 import { ConfigService } from '@nestjs/config';
 
@@ -40,7 +39,7 @@ export class MarksService {
     } catch (error) {
       console.log(error);
       const res = MicroserviceResponseStatusFabric.create(
-        HttpStatusExtends.INTERNAL_SERVER_ERROR,
+        HttpStatus.INTERNAL_SERVER_ERROR,
         error,
       );
       return res;
@@ -70,9 +69,7 @@ export class MarksService {
         relations: ['category'],
       });
       if (!mark)
-        return MicroserviceResponseStatusFabric.create(
-          HttpStatusExtends.NOT_FOUND,
-        );
+        return MicroserviceResponseStatusFabric.create(HttpStatus.NOT_FOUND);
 
       const verified = await this.verificationRep.count({
         where: { mark: { id: Number(data.markId) } },
@@ -115,9 +112,7 @@ export class MarksService {
 
       if (!mark) {
         await queryRunner.rollbackTransaction();
-        return MicroserviceResponseStatusFabric.create(
-          HttpStatusExtends.NOT_FOUND,
-        );
+        return MicroserviceResponseStatusFabric.create(HttpStatus.NOT_FOUND);
       }
 
       const newVerification = new Verification();
@@ -151,9 +146,7 @@ export class MarksService {
 
       if (!mark) {
         queryRunner.rollbackTransaction();
-        return MicroserviceResponseStatusFabric.create(
-          HttpStatusExtends.NOT_FOUND,
-        );
+        return MicroserviceResponseStatusFabric.create(HttpStatus.NOT_FOUND);
       }
 
       await queryRunner.manager.delete(Verification, {
@@ -178,9 +171,7 @@ export class MarksService {
       });
 
       if (!categories)
-        return MicroserviceResponseStatusFabric.create(
-          HttpStatusExtends.NOT_FOUND,
-        );
+        return MicroserviceResponseStatusFabric.create(HttpStatus.NOT_FOUND);
       return categories;
     });
   }
@@ -191,7 +182,6 @@ export class MarksService {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
-
     const result = await this.handleAsyncOperation(async () => {
       const category = await queryRunner.manager.findOne(Category, {
         where: { id: data.categoryId },
@@ -199,9 +189,7 @@ export class MarksService {
 
       if (!category) {
         await queryRunner.rollbackTransaction();
-        return MicroserviceResponseStatusFabric.create(
-          HttpStatusExtends.NOT_FOUND,
-        );
+        return MicroserviceResponseStatusFabric.create(HttpStatus.NOT_FOUND);
       }
 
       const checkMark = await queryRunner.manager.query(
@@ -213,9 +201,7 @@ export class MarksService {
 
       if (checkMark.length > 0) {
         await queryRunner.rollbackTransaction();
-        return MicroserviceResponseStatusFabric.create(
-          HttpStatusExtends.CONFLICT,
-        );
+        return MicroserviceResponseStatusFabric.create(HttpStatus.CONFLICT);
       }
 
       const twelveHoursAgo = new Date();
@@ -230,9 +216,7 @@ export class MarksService {
 
       if (countLastTwelveHoursMarks >= 5) {
         await queryRunner.rollbackTransaction();
-        return MicroserviceResponseStatusFabric.create(
-          HttpStatusExtends.FORBIDDEN,
-        );
+        return MicroserviceResponseStatusFabric.create(HttpStatus.FORBIDDEN);
       }
 
       const mark = new Mark();

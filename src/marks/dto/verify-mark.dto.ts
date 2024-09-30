@@ -10,8 +10,4 @@ export class VerifyMarkDto {
   @IsString()
   @IsNotEmpty()
   userId: string;
-
-  @IsString()
-  @IsNotEmpty()
-  csrf_token: string;
 }

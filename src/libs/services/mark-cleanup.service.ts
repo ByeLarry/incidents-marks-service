@@ -4,12 +4,14 @@ import { LessThan, Repository } from 'typeorm';
 import * as cron from 'node-cron';
 import { Mark } from '../../marks/entities/mark.entity';
 import { DateEnum } from '../enums/date.enum';
+import { AppLoggerService } from '../helpers';
 
 @Injectable()
 export class MarkCleanupService {
   constructor(
     @InjectRepository(Mark)
     private readonly markRepository: Repository<Mark>,
+    private readonly appLogger: AppLoggerService,
   ) {
     cron.schedule('0 * * * *', this.cleanupOldMarks.bind(this));
   }
@@ -18,8 +20,9 @@ export class MarkCleanupService {
     try {
       await this.markRepository.delete({ createdAt: LessThan(twelveHoursAgo) });
       console.log(Date.now(), ' Old marks deleted');
+      this.appLogger.log('Old marks deleted');
     } catch (error) {
-      console.error(Date.now(), ' Error deleting old marks:', error);
+      this.appLogger.error('Error deleting old marks:', error);
     }
   }
 }
