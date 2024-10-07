@@ -216,7 +216,9 @@ export class MarksService {
 
       if (countLastTwelveHoursMarks >= 5) {
         await queryRunner.rollbackTransaction();
-        return MicroserviceResponseStatusFabric.create(HttpStatus.FORBIDDEN);
+        return MicroserviceResponseStatusFabric.create(
+          HttpStatus.TOO_MANY_REQUESTS,
+        );
       }
 
       const mark = new Mark();

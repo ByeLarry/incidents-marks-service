@@ -11,32 +11,32 @@ import { CreateMarkDto } from './dto/create-mark.dto';
 export class MarksController {
   constructor(private readonly marksService: MarksService) {}
 
-  @MessagePattern(MsgMarksEnum.MAP_INIT_SEND)
+  @MessagePattern(MsgMarksEnum.MAP_INIT)
   getMarks(@Payload() data: CoordsDto) {
     return this.marksService.getMarks(data);
   }
 
-  @MessagePattern(MsgMarksEnum.MARK_GET_SEND)
+  @MessagePattern(MsgMarksEnum.MARK_GET)
   getMark(@Payload() data: MarkDto) {
     return this.marksService.getMark(data);
   }
 
-  @MessagePattern(MsgMarksEnum.MARK_VERIFY_TRUE_SEND)
+  @MessagePattern(MsgMarksEnum.MARK_VERIFY_TRUE)
   verifyTrue(@Payload() data: VerifyMarkDto) {
     return this.marksService.verifyTrue(data);
   }
 
-  @MessagePattern(MsgMarksEnum.MARK_VERIFY_FALSE_SEND)
+  @MessagePattern(MsgMarksEnum.MARK_VERIFY_FALSE)
   verifyFalse(@Payload() data: VerifyMarkDto) {
     return this.marksService.verifyFalse(data);
   }
 
-  @MessagePattern(MsgMarksEnum.CATEGORIES_SEND)
+  @MessagePattern(MsgMarksEnum.CATEGORIES)
   getCategories() {
     return this.marksService.getCategories();
   }
 
-  @MessagePattern(MsgMarksEnum.CREATE_MARK_SEND)
+  @MessagePattern(MsgMarksEnum.CREATE_MARK)
   createMark(data: CreateMarkDto) {
     return this.marksService.createMark(data);
   }
