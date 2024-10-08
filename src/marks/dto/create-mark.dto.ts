@@ -1,5 +1,6 @@
-import { Transform } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import { AddressDto } from '.';
 
 export class CreateMarkDto {
   @IsString()
@@ -27,4 +28,7 @@ export class CreateMarkDto {
   @IsNotEmpty()
   @Transform(({ value }) => Number(value), { toClassOnly: true })
   categoryId: number;
+
+  @Type(() => AddressDto)
+  address?: AddressDto;
 }

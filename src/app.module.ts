@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MarksModule } from './marks/marks.module';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { PRODACTION_ENV } from './libs/utils';
+import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
+import { DB_CONNECTION_CONFIG } from '../typeOrm.config';
 
 @Module({
   imports: [
@@ -10,18 +10,7 @@ import { PRODACTION_ENV } from './libs/utils';
     MarksModule,
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
-      useFactory: (configService: ConfigService) => ({
-        type: 'postgres',
-        host: configService.get('DB_HOST'),
-        port: configService.get('DB_PORT'),
-        username: configService.get('DB_USERNAME'),
-        password: configService.get('DB_PASSWORD'),
-        database: configService.get('DB_NAME'),
-        entities: [__dirname + '/**/*.entity{.ts,.js}'],
-        synchronize:
-          configService.get('NODE_ENV') === PRODACTION_ENV ? false : true,
-        schema: configService.get('DB_SCHEMA'),
-      }),
+      useFactory: () => DB_CONNECTION_CONFIG as TypeOrmModuleOptions,
       inject: [ConfigService],
     }),
   ],

@@ -228,6 +228,8 @@ export class MarksService {
       mark.description = data.description;
       mark.userId = data.userId;
       mark.category = category;
+      mark.addressName = data.address.name;
+      mark.addressDescription = data.address.description;
       await queryRunner.manager.save(mark);
       await queryRunner.commitTransaction();
       const markRecv: MarkRecvDto = {
@@ -236,6 +238,8 @@ export class MarksService {
         lng: mark.lng,
         categoryId: mark.category.id,
         color: mark.category.color,
+        addressDescription: mark.addressDescription,
+        addressName: mark.addressName,
       };
       return markRecv;
     });

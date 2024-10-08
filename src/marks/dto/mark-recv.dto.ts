@@ -52,4 +52,10 @@ export class MarkRecvDto {
 
   @IsString()
   color?: string;
+
+  @IsString()
+  addressDescription?: string;
+
+  @IsString()
+  addressName?: string;
 }

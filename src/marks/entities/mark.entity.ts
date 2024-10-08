@@ -36,6 +36,12 @@ export class Mark {
   @Column({ length: 200 })
   description: string;
 
+  @Column({ nullable: true })
+  addressName?: string;
+
+  @Column({ nullable: true })
+  addressDescription?: string;
+
   @ManyToOne(() => Category, { eager: true })
   category: Category;
 
