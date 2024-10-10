@@ -1,4 +1,4 @@
-export * from './categories.dto';
+export * from '../../categories/dto/categories.dto';
 export * from './coords.dto';
 export * from './create-mark.dto';
 export * from './mark-recv.dto';

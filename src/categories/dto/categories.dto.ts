@@ -1,5 +1,5 @@
 import { Transform } from 'class-transformer';
-import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import { IsDate, IsNotEmpty, IsNumber, IsString } from 'class-validator';
 
 export class CategoryDto {
   @IsNumber()
@@ -14,4 +14,12 @@ export class CategoryDto {
   @IsString()
   @IsNotEmpty()
   color: string;
+
+  @IsDate()
+  @IsNotEmpty()
+  createdAt: Date;
+  
+  @IsDate()
+  @IsNotEmpty()
+  updatedAt: Date;
 }

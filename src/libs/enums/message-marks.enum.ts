@@ -7,4 +7,5 @@ export enum MsgMarksEnum {
   GET_VERIFY = 'get-verify-send',
   CATEGORIES = 'categories-send',
   CREATE_MARK = 'create-mark-send',
+  CATEGORIES_STATS = 'categories-stats-send',
 }

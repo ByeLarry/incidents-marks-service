@@ -2,19 +2,17 @@ import { HttpStatus, Injectable } from '@nestjs/common';
 import { CoordsDto } from './dto/coords.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Mark } from './entities/mark.entity';
-import { Category } from './entities/category.entity';
 import { DataSource, MoreThanOrEqual, Repository } from 'typeorm';
-
 import { VerifyMarkDto } from './dto/verify-mark.dto';
 import { Verification } from './entities/verification.entity';
 import { MarkDto } from './dto/mark.dto';
-import { CategoryDto } from './dto/categories.dto';
 import { MarkRecvDto } from './dto/mark-recv.dto';
 import { CreateMarkDto } from './dto/create-mark.dto';
 import { MicroserviceResponseStatus } from './dto/microservice-response-status.dto';
 import { MicroserviceResponseStatusFabric } from '../libs/utils/microservice-response-status-fabric.util';
 import { CustomSqlQueryService } from '../libs/services/custom-sql-query.service';
 import { ConfigService } from '@nestjs/config';
+import { Category } from '../categories/entities';
 
 type AsyncFunction<T> = () => Promise<T>;
 
@@ -22,8 +20,6 @@ type AsyncFunction<T> = () => Promise<T>;
 export class MarksService {
   constructor(
     @InjectRepository(Mark) private readonly markRep: Repository<Mark>,
-    @InjectRepository(Category)
-    private readonly categoryRep: Repository<Category>,
     @InjectRepository(Verification)
     private readonly verificationRep: Repository<Verification>,
     private readonly dataSource: DataSource,
@@ -37,7 +33,7 @@ export class MarksService {
     try {
       return await operation();
     } catch (error) {
-      console.log(error);
+      console.error(error);
       const res = MicroserviceResponseStatusFabric.create(
         HttpStatus.INTERNAL_SERVER_ERROR,
         error,
@@ -162,18 +158,6 @@ export class MarksService {
     });
     await queryRunner.release();
     return result;
-  }
-
-  async getCategories(): Promise<CategoryDto[] | MicroserviceResponseStatus> {
-    return await this.handleAsyncOperation(async () => {
-      const categories: CategoryDto[] = await this.categoryRep.find({
-        select: ['id', 'name', 'color'],
-      });
-
-      if (!categories)
-        return MicroserviceResponseStatusFabric.create(HttpStatus.NOT_FOUND);
-      return categories;
-    });
   }
 
   async createMark(

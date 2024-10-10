@@ -7,8 +7,8 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { Category } from './category.entity';
 import { Verification } from './verification.entity';
+import { Category } from '../../categories/entities';
 
 @Entity()
 export class Mark {

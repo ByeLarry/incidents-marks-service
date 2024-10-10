@@ -31,11 +31,6 @@ export class MarksController {
     return this.marksService.verifyFalse(data);
   }
 
-  @MessagePattern(MsgMarksEnum.CATEGORIES)
-  getCategories() {
-    return this.marksService.getCategories();
-  }
-
   @MessagePattern(MsgMarksEnum.CREATE_MARK)
   createMark(data: CreateMarkDto) {
     return this.marksService.createMark(data);

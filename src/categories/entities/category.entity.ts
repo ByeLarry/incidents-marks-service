@@ -6,7 +6,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { Mark } from './mark.entity';
+import { Mark } from '../../marks/entities';
 
 @Entity()
 export class Category {
