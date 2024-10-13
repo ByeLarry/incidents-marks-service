@@ -8,4 +8,8 @@ export enum MsgMarksEnum {
   CATEGORIES = 'categories-send',
   CREATE_MARK = 'create-mark-send',
   CATEGORIES_STATS = 'categories-stats-send',
+  CREATE_CATEGORY = 'create-category-send',
+  UPDATE_CATEGORY = 'update-category-send',
+  DELETE_CATEGORY = 'delete-category-send',
+  GET_CATEGORY = 'get-category-send',
 }
