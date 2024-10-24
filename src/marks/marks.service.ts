@@ -230,4 +230,15 @@ export class MarksService {
     await queryRunner.release();
     return result;
   }
+
+  async getAllMarks() {
+    return this.handleAsyncOperation(
+      async () =>
+        await this.markRep.query(
+          this.customSqlQueryService.getAllPoints(
+            this.configService.get('DB_SCHEMA') || 'public',
+          ),
+        ),
+    );
+  }
 }

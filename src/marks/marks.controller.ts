@@ -35,4 +35,9 @@ export class MarksController {
   createMark(data: CreateMarkDto) {
     return this.marksService.createMark(data);
   }
+
+  @MessagePattern(MsgMarksEnum.GET_ALL_MARKS)
+  getAllMarks() {
+    return this.marksService.getAllMarks();
+  }
 }

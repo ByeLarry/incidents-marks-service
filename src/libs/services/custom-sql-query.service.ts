@@ -19,6 +19,17 @@ export class CustomSqlQueryService {
         `;
   }
 
+  getAllPoints(schema: string) {
+    return `
+        SELECT marks.lng, marks.lat, marks.mark_id AS "id", marks."categoryId", category.color
+        FROM (
+            SELECT lng, lat, mark_id, "categoryId"
+            FROM ${schema}.mark
+        ) AS marks
+        JOIN ${schema}.category ON marks."categoryId" = category.category_id;
+        `;
+  }
+
   getNearestPointsWithDistance(schema: string) {
     return `
         SELECT lng, lat, mark_id AS "id", "categoryId",
