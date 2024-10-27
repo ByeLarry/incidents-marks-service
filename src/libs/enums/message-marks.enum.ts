@@ -13,4 +13,5 @@ export enum MsgMarksEnum {
   DELETE_CATEGORY = 'delete-category-send',
   GET_CATEGORY = 'get-category-send',
   GET_ALL_MARKS = 'get-all-marks-send',
+  DELETE_MARK = 'delete-mark-send',
 }

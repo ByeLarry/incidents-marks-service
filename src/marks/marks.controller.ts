@@ -40,4 +40,9 @@ export class MarksController {
   getAllMarks() {
     return this.marksService.getAllMarks();
   }
+
+  @MessagePattern(MsgMarksEnum.DELETE_MARK)
+  deleteMark(@Payload() id: number) {
+    return this.marksService.deleteMarkById(id);
+  }
 }

@@ -68,7 +68,6 @@ export class CategoriesService {
       if (!category)
         return MicroserviceResponseStatusFabric.create(HttpStatus.NOT_FOUND);
       await this.categoryRep.delete({ id: data.id });
-      console.log(category);
       return category;
     });
   }

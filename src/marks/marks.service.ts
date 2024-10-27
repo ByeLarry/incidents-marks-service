@@ -42,6 +42,18 @@ export class MarksService {
     }
   }
 
+  private createMarkRecvDto(mark: Mark): MarkRecvDto {
+    return {
+      id: mark.id,
+      lat: mark.lat,
+      lng: mark.lng,
+      categoryId: mark.category.id,
+      color: mark.category.color,
+      addressDescription: mark.addressDescription,
+      addressName: mark.addressName,
+    };
+  }
+
   async getMarks(
     data: CoordsDto,
   ): Promise<MarkRecvDto[] | MicroserviceResponseStatus> {
@@ -55,6 +67,7 @@ export class MarksService {
         ),
     );
   }
+
 
   async getMark(
     data: MarkDto,
@@ -167,21 +180,22 @@ export class MarksService {
     await queryRunner.connect();
     await queryRunner.startTransaction();
     const result = await this.handleAsyncOperation(async () => {
-      const category = await queryRunner.manager.findOne(Category, {
-        where: { id: data.categoryId },
-      });
+      const [category, checkMark] = await Promise.all([
+        queryRunner.manager.findOne(Category, {
+          where: { id: data.categoryId },
+        }),
+        queryRunner.manager.query(
+          this.customSqlQueryService.checkApproximateDistance(
+            this.configService.get('DB_SCHEMA') || 'public',
+          ),
+          [data.lng, data.lat, 25],
+        ),
+      ]);
 
       if (!category) {
         await queryRunner.rollbackTransaction();
         return MicroserviceResponseStatusFabric.create(HttpStatus.NOT_FOUND);
       }
-
-      const checkMark = await queryRunner.manager.query(
-        this.customSqlQueryService.checkApproximateDistance(
-          this.configService.get('DB_SCHEMA') || 'public',
-        ),
-        [data.lng, data.lat, 25],
-      );
 
       if (checkMark.length > 0) {
         await queryRunner.rollbackTransaction();
@@ -216,16 +230,7 @@ export class MarksService {
       mark.addressDescription = data.address.description;
       await queryRunner.manager.save(mark);
       await queryRunner.commitTransaction();
-      const markRecv: MarkRecvDto = {
-        id: mark.id,
-        lat: mark.lat,
-        lng: mark.lng,
-        categoryId: mark.category.id,
-        color: mark.category.color,
-        addressDescription: mark.addressDescription,
-        addressName: mark.addressName,
-      };
-      return markRecv;
+      return this.createMarkRecvDto(mark);
     });
     await queryRunner.release();
     return result;
@@ -240,5 +245,23 @@ export class MarksService {
           ),
         ),
     );
+  }
+
+  async deleteMarkById(id: number) {
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+    const result = await this.handleAsyncOperation(async () => {
+      const mark = await queryRunner.manager.findOne(Mark, { where: { id } });
+      if (!mark) {
+        await queryRunner.rollbackTransaction();
+        return MicroserviceResponseStatusFabric.create(HttpStatus.NOT_FOUND);
+      }
+      await queryRunner.manager.delete(Mark, { id });
+      await queryRunner.commitTransaction();
+      return this.createMarkRecvDto(mark);
+    });
+    await queryRunner.release();
+    return result;
   }
 }
