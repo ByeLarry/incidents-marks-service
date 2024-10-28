@@ -1,34 +1,34 @@
 import { Controller } from '@nestjs/common';
 import { MessagePattern, Payload } from '@nestjs/microservices';
 import { CategoriesService } from './categories.service';
-import { MsgMarksEnum } from '../libs/enums';
 import { CreateCategoryDto, DeleteCategoryDto, UpdateCategoryDto } from './dto';
+import { MsgCategoriesEnum } from '../libs/enums';
 
 @Controller()
 export class CategoriesController {
   constructor(private readonly categoriesService: CategoriesService) {}
 
-  @MessagePattern(MsgMarksEnum.CATEGORIES)
+  @MessagePattern(MsgCategoriesEnum.CATEGORIES)
   findAll() {
     return this.categoriesService.findAll();
   }
 
-  @MessagePattern(MsgMarksEnum.CREATE_CATEGORY)
+  @MessagePattern(MsgCategoriesEnum.CREATE_CATEGORY)
   createCategory(@Payload() dto: CreateCategoryDto) {
     return this.categoriesService.createCategory(dto);
   }
 
-  @MessagePattern(MsgMarksEnum.DELETE_CATEGORY)
+  @MessagePattern(MsgCategoriesEnum.DELETE_CATEGORY)
   deleteCategoryDto(@Payload() dto: DeleteCategoryDto) {
     return this.categoriesService.deleteCategory(dto);
   }
 
-  @MessagePattern(MsgMarksEnum.UPDATE_CATEGORY)
+  @MessagePattern(MsgCategoriesEnum.UPDATE_CATEGORY)
   updateCategoryDto(@Payload() dto: UpdateCategoryDto) {
     return this.categoriesService.updateCategory(dto);
   }
 
-  @MessagePattern(MsgMarksEnum.CATEGORIES_STATS)
+  @MessagePattern(MsgCategoriesEnum.CATEGORIES_STATS)
   getCategoriesStats() {
     return this.categoriesService.getCategoriesStats();
   }
