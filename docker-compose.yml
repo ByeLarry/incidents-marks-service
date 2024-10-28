@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   marks:
-    container_name: incidents-points
+    container_name: incidents-marks
     build: .
     ports:
       - "4444:4444"
