@@ -2,8 +2,8 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MarksModule } from './marks/marks.module';
 import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
-import { DB_CONNECTION_CONFIG } from '../typeOrm.config';
 import { CategoriesModule } from './categories/categories.module';
+import { DB_CONNECTION_CONFIG } from './libs/utils';
 
 @Module({
   imports: [
