@@ -23,6 +23,24 @@ npm run start:dev
 # Создание и запуск docker сервисов
 docker-compose up -d
 ```
+
+## Миграции
+
+#### Команды для управления миграциями
+```bash
+# Создание миграции
+npm run migration:generate src/migrations/<migrationName>
+
+# Выполнение всех миграций
+npm run migration:run
+
+# Откат последней миграции
+npm run migration:down
+
+# Создание пустой миграции
+npm run migration:create src/migrations/<migrationName>
+```
+
 ## Проектирование
 
 _Диаграммы можно сохранять и редактировать в ***[draw.io](https://app.diagrams.net/)***_
