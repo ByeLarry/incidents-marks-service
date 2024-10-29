@@ -25,6 +25,6 @@ export class Category {
   @Column({ nullable: true, length: 20 })
   color: string;
 
-  @OneToMany(() => Mark, (mark) => mark.category)
+  @OneToMany(() => Mark, (mark) => mark.category, {cascade: true})
   marks: Mark[];
 }

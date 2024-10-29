@@ -67,6 +67,7 @@ export class CategoriesService {
       });
       if (!category)
         return MicroserviceResponseStatusFabric.create(HttpStatus.NOT_FOUND);
+      await this.markRep.delete({ category });
       await this.categoryRep.delete({ id: data.id });
       return category;
     });
