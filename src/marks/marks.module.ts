@@ -7,6 +7,7 @@ import { Verification } from './entities/verification.entity';
 import { CustomSqlQueryService } from '../libs/services/custom-sql-query.service';
 import { MarkCleanupService } from '../libs/services/mark-cleanup.service';
 import { AppLoggerService } from '../libs/helpers';
+import { SearchServiceProvide } from '../libs/utils';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Mark, Verification])],
@@ -17,6 +18,7 @@ import { AppLoggerService } from '../libs/helpers';
     CustomSqlQueryService,
     AppLoggerService,
     Logger,
+    SearchServiceProvide,
   ],
 })
 export class MarksModule {}

@@ -1,6 +1,14 @@
-import { HttpStatus, Injectable } from '@nestjs/common';
+import {
+  HttpStatus,
+  Inject,
+  Injectable,
+  OnApplicationBootstrap,
+} from '@nestjs/common';
 import { CategoryDto, MicroserviceResponseStatus } from '../marks/dto';
-import { MicroserviceResponseStatusFabric } from '../libs/utils';
+import {
+  MicroserviceResponseStatusFabric,
+  SEARCH_SERVICE_TAG,
+} from '../libs/utils';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Category } from './entities';
@@ -11,16 +19,20 @@ import {
   UpdateCategoryDto,
 } from './dto';
 import { Mark } from '../marks/entities';
+import { ClientProxy } from '@nestjs/microservices';
+import { MsgSearchEnum } from '../libs/enums';
+import { firstValueFrom } from 'rxjs';
 
 type AsyncFunction<T> = () => Promise<T>;
 
 @Injectable()
-export class CategoriesService {
+export class CategoriesService implements OnApplicationBootstrap {
   constructor(
     @InjectRepository(Category)
     private readonly categoryRep: Repository<Category>,
     @InjectRepository(Mark)
     private readonly markRep: Repository<Mark>,
+    @Inject(SEARCH_SERVICE_TAG) private searchClient: ClientProxy,
   ) {}
 
   private async handleAsyncOperation<T>(
@@ -38,14 +50,21 @@ export class CategoriesService {
     }
   }
 
+  async onApplicationBootstrap() {
+    return await this.handleAsyncOperation(async () => {
+      const categories = await this.findAll();
+      firstValueFrom(
+        this.searchClient.send(MsgSearchEnum.SET_CATEGORIES, categories),
+      );
+    });
+  }
+
   async findAll() {
     return await this.handleAsyncOperation(async () => {
       const categories: CategoryDto[] = await this.categoryRep.find({
         select: ['id', 'name', 'color', 'createdAt', 'updatedAt'],
       });
 
-      if (!categories)
-        return MicroserviceResponseStatusFabric.create(HttpStatus.NOT_FOUND);
       return categories;
     });
   }

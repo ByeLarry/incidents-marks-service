@@ -3,3 +3,5 @@ export const AUTH_RMQ_QUEUE = 'auth_queue';
 export const PRODACTION_ENV = 'production';
 export const TEST_ENV = 'test';
 export const DEVELOPMENT_ENV = 'development';
+export const SEARCH_RMQ_QUEUE = 'search_queue';
+export const SEARCH_RMQ_QUEUE_REPLY = 'search_queue_reply';

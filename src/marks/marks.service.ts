@@ -1,4 +1,9 @@
-import { HttpStatus, Injectable } from '@nestjs/common';
+import {
+  HttpStatus,
+  Inject,
+  Injectable,
+  OnApplicationBootstrap,
+} from '@nestjs/common';
 import { CoordsDto } from './dto/coords.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Mark } from './entities/mark.entity';
@@ -13,11 +18,15 @@ import { MicroserviceResponseStatusFabric } from '../libs/utils/microservice-res
 import { CustomSqlQueryService } from '../libs/services/custom-sql-query.service';
 import { ConfigService } from '@nestjs/config';
 import { Category } from '../categories/entities';
+import { ClientProxy } from '@nestjs/microservices';
+import { SEARCH_SERVICE_TAG } from '../libs/utils';
+import { MsgSearchEnum } from '../libs/enums';
+import { firstValueFrom } from 'rxjs';
 
 type AsyncFunction<T> = () => Promise<T>;
 
 @Injectable()
-export class MarksService {
+export class MarksService implements OnApplicationBootstrap {
   constructor(
     @InjectRepository(Mark) private readonly markRep: Repository<Mark>,
     @InjectRepository(Verification)
@@ -25,6 +34,7 @@ export class MarksService {
     private readonly dataSource: DataSource,
     private readonly customSqlQueryService: CustomSqlQueryService,
     private readonly configService: ConfigService,
+    @Inject(SEARCH_SERVICE_TAG) private searchClient: ClientProxy,
   ) {}
 
   private async handleAsyncOperation<T>(
@@ -40,6 +50,26 @@ export class MarksService {
       );
       return res;
     }
+  }
+
+  async onApplicationBootstrap() {
+    return await this.handleAsyncOperation(async () => {
+      const marks = this.markRep
+        .createQueryBuilder('mark')
+        .select([
+          'mark.id',
+          'mark.lat',
+          'mark.lng',
+          'mark.addressDescription',
+          'mark.addressName',
+          'mark.title',
+          'mark.description',
+          'mark.createdAt',
+          'mark.updatedAt',
+        ])
+        .getMany();
+      firstValueFrom(this.searchClient.send(MsgSearchEnum.SET_MARKS, marks));
+    });
   }
 
   private createMarkRecvDto(mark: Mark): MarkRecvDto {
@@ -67,7 +97,6 @@ export class MarksService {
         ),
     );
   }
-
 
   async getMark(
     data: MarkDto,
