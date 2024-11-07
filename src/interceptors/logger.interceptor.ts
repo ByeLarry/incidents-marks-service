@@ -17,7 +17,7 @@ export class LoggingInterceptor implements NestInterceptor {
     return next.handle().pipe(
       tap((data) => {
         this.logger.log(
-          `[${calledHandler}] - returned '${JSON.stringify(data).slice(0, 50)}'`,
+          `[${calledHandler}] - returned data length:  ${JSON.stringify(data).length}`,
         );
       }),
       catchError((error) => {

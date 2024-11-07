@@ -8,6 +8,7 @@ import { CustomSqlQueryService } from '../libs/services/custom-sql-query.service
 import { MarkCleanupService } from '../libs/services/mark-cleanup.service';
 import { AppLoggerService } from '../libs/helpers';
 import { SearchServiceProvide } from '../libs/utils';
+import { SearchService } from '../libs/services';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Mark, Verification])],
@@ -18,6 +19,7 @@ import { SearchServiceProvide } from '../libs/utils';
     CustomSqlQueryService,
     AppLoggerService,
     SearchServiceProvide,
+    SearchService,
   ],
 })
 export class MarksModule {}

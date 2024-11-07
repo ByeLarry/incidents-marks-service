@@ -6,10 +6,16 @@ import { Category } from './entities';
 import { Mark } from '../marks/entities';
 import { SearchServiceProvide } from '../libs/utils';
 import { AppLoggerService } from '../libs/helpers';
+import { SearchService } from '../libs/services';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Category, Mark])],
   controllers: [CategoriesController],
-  providers: [CategoriesService, SearchServiceProvide, AppLoggerService],
+  providers: [
+    CategoriesService,
+    SearchServiceProvide,
+    AppLoggerService,
+    SearchService,
+  ],
 })
 export class CategoriesModule {}

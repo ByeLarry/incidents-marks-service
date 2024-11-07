@@ -1,14 +1,6 @@
-import {
-  HttpStatus,
-  Inject,
-  Injectable,
-  OnApplicationBootstrap,
-} from '@nestjs/common';
+import { HttpStatus, Injectable, OnApplicationBootstrap } from '@nestjs/common';
 import { CategoryDto, MicroserviceResponseStatus } from '../marks/dto';
-import {
-  MicroserviceResponseStatusFabric,
-  SEARCH_SERVICE_TAG,
-} from '../libs/utils';
+import { MicroserviceResponseStatusFabric } from '../libs/utils';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Category } from './entities';
@@ -19,10 +11,8 @@ import {
   UpdateCategoryDto,
 } from './dto';
 import { Mark } from '../marks/entities';
-import { ClientProxy } from '@nestjs/microservices';
 import { MsgSearchEnum } from '../libs/enums';
-import { AppLoggerService } from '../libs/helpers';
-import { firstValueFrom } from 'rxjs';
+import { SearchService } from '../libs/services';
 
 type AsyncFunction<T> = () => Promise<T>;
 
@@ -33,8 +23,7 @@ export class CategoriesService implements OnApplicationBootstrap {
     private readonly categoryRep: Repository<Category>,
     @InjectRepository(Mark)
     private readonly markRep: Repository<Mark>,
-    @Inject(SEARCH_SERVICE_TAG) private searchClient: ClientProxy,
-    private readonly logger: AppLoggerService,
+    private readonly searchService: SearchService,
   ) {}
 
   private async handleAsyncOperation<T>(
@@ -56,11 +45,10 @@ export class CategoriesService implements OnApplicationBootstrap {
     return await this.handleAsyncOperation(async () => {
       const categories = await this.findAll();
 
-      const res = await firstValueFrom(
-        this.searchClient.send(MsgSearchEnum.SET_CATEGORIES, categories),
+      this.searchService.update<CategoryDto[]>(
+        categories as CategoryDto[],
+        MsgSearchEnum.SET_CATEGORIES,
       );
-
-      this.logger.log(`[${MsgSearchEnum.SET_CATEGORIES}] - ${res}`);
     });
   }
 
@@ -80,6 +68,12 @@ export class CategoriesService implements OnApplicationBootstrap {
       category.name = data.name;
       category.color = data.color;
       const newCategory = await this.categoryRep.save(category);
+
+      await this.searchService.update<Category>(
+        newCategory,
+        MsgSearchEnum.SET_CATEGORY,
+      );
+
       return newCategory;
     });
   }
@@ -92,7 +86,14 @@ export class CategoriesService implements OnApplicationBootstrap {
       if (!category)
         return MicroserviceResponseStatusFabric.create(HttpStatus.NOT_FOUND);
       await this.markRep.delete({ category });
-      await this.categoryRep.delete({ id: data.id });
+
+      Promise.all([
+        await this.categoryRep.delete({ id: data.id }),
+        await this.searchService.update(
+          category,
+          MsgSearchEnum.DELETE_CATEGORY,
+        ),
+      ]);
       return category;
     });
   }
@@ -107,6 +108,11 @@ export class CategoriesService implements OnApplicationBootstrap {
       category.name = data.name;
       category.color = data.color;
       const newCategory = await this.categoryRep.save(category);
+
+      await this.searchService.update<Category>(
+        newCategory,
+        MsgSearchEnum.SET_CATEGORY,
+      );
       return newCategory;
     });
   }

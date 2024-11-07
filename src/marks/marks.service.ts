@@ -1,9 +1,4 @@
-import {
-  HttpStatus,
-  Inject,
-  Injectable,
-  OnApplicationBootstrap,
-} from '@nestjs/common';
+import { HttpStatus, Injectable, OnApplicationBootstrap } from '@nestjs/common';
 import { CoordsDto } from './dto/coords.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Mark } from './entities/mark.entity';
@@ -18,11 +13,8 @@ import { MicroserviceResponseStatusFabric } from '../libs/utils/microservice-res
 import { CustomSqlQueryService } from '../libs/services/custom-sql-query.service';
 import { ConfigService } from '@nestjs/config';
 import { Category } from '../categories/entities';
-import { ClientProxy } from '@nestjs/microservices';
-import { SEARCH_SERVICE_TAG } from '../libs/utils';
 import { MsgSearchEnum } from '../libs/enums';
-import { firstValueFrom } from 'rxjs';
-import { AppLoggerService } from '../libs/helpers';
+import { SearchService } from '../libs/services';
 
 type AsyncFunction<T> = () => Promise<T>;
 
@@ -35,8 +27,7 @@ export class MarksService implements OnApplicationBootstrap {
     private readonly dataSource: DataSource,
     private readonly customSqlQueryService: CustomSqlQueryService,
     private readonly configService: ConfigService,
-    @Inject(SEARCH_SERVICE_TAG) private searchClient: ClientProxy,
-    private readonly logger: AppLoggerService,
+    private readonly searchService: SearchService,
   ) {}
 
   private async handleAsyncOperation<T>(
@@ -71,11 +62,7 @@ export class MarksService implements OnApplicationBootstrap {
         ])
         .getMany();
 
-      const res = await firstValueFrom(
-        this.searchClient.send<string>(MsgSearchEnum.SET_MARKS, marks),
-      );
-
-      this.logger.log(`[${MsgSearchEnum.SET_MARKS}] - ${res}`);
+      this.searchService.update<Mark[]>(marks, MsgSearchEnum.SET_MARKS);
     });
   }
 
@@ -265,7 +252,10 @@ export class MarksService implements OnApplicationBootstrap {
       mark.addressName = data.address.name;
       mark.addressDescription = data.address.description;
       await queryRunner.manager.save(mark);
-      await queryRunner.commitTransaction();
+      Promise.all([
+        queryRunner.commitTransaction(),
+        this.searchService.update<Mark>(mark, MsgSearchEnum.SET_MARK)
+      ])
       return this.createMarkRecvDto(mark);
     });
     await queryRunner.release();
@@ -294,10 +284,14 @@ export class MarksService implements OnApplicationBootstrap {
         return MicroserviceResponseStatusFabric.create(HttpStatus.NOT_FOUND);
       }
       await queryRunner.manager.delete(Mark, { id });
-      await queryRunner.commitTransaction();
+      Promise.all([
+        queryRunner.commitTransaction(),
+        this.searchService.update<Mark>(mark, MsgSearchEnum.DELETE_MARK),
+      ]);
       return this.createMarkRecvDto(mark);
     });
     await queryRunner.release();
+
     return result;
   }
 }
