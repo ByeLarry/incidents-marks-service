@@ -1,4 +1,4 @@
-import { Logger, Module } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { MarksService } from './marks.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Mark } from './entities/mark.entity';
@@ -17,7 +17,6 @@ import { SearchServiceProvide } from '../libs/utils';
     MarkCleanupService,
     CustomSqlQueryService,
     AppLoggerService,
-    Logger,
     SearchServiceProvide,
   ],
 })

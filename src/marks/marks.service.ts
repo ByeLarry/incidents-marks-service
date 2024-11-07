@@ -22,6 +22,7 @@ import { ClientProxy } from '@nestjs/microservices';
 import { SEARCH_SERVICE_TAG } from '../libs/utils';
 import { MsgSearchEnum } from '../libs/enums';
 import { firstValueFrom } from 'rxjs';
+import { AppLoggerService } from '../libs/helpers';
 
 type AsyncFunction<T> = () => Promise<T>;
 
@@ -35,6 +36,7 @@ export class MarksService implements OnApplicationBootstrap {
     private readonly customSqlQueryService: CustomSqlQueryService,
     private readonly configService: ConfigService,
     @Inject(SEARCH_SERVICE_TAG) private searchClient: ClientProxy,
+    private readonly logger: AppLoggerService,
   ) {}
 
   private async handleAsyncOperation<T>(
@@ -54,7 +56,7 @@ export class MarksService implements OnApplicationBootstrap {
 
   async onApplicationBootstrap() {
     return await this.handleAsyncOperation(async () => {
-      const marks = this.markRep
+      const marks = await this.markRep
         .createQueryBuilder('mark')
         .select([
           'mark.id',
@@ -68,7 +70,12 @@ export class MarksService implements OnApplicationBootstrap {
           'mark.updatedAt',
         ])
         .getMany();
-      firstValueFrom(this.searchClient.send(MsgSearchEnum.SET_MARKS, marks));
+
+      const res = await firstValueFrom(
+        this.searchClient.send<string>(MsgSearchEnum.SET_MARKS, marks),
+      );
+
+      this.logger.log(`[${MsgSearchEnum.SET_MARKS}] - ${res}`);
     });
   }
 

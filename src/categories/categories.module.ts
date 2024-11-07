@@ -5,10 +5,11 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Category } from './entities';
 import { Mark } from '../marks/entities';
 import { SearchServiceProvide } from '../libs/utils';
+import { AppLoggerService } from '../libs/helpers';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Category, Mark])],
   controllers: [CategoriesController],
-  providers: [CategoriesService, SearchServiceProvide],
+  providers: [CategoriesService, SearchServiceProvide, AppLoggerService],
 })
 export class CategoriesModule {}

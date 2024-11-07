@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { LessThan, Repository } from 'typeorm';
 import * as cron from 'node-cron';
@@ -11,8 +11,7 @@ export class MarkCleanupService {
   constructor(
     @InjectRepository(Mark)
     private readonly markRepository: Repository<Mark>,
-    private readonly appLogger: AppLoggerService,
-    private readonly logger: Logger,
+    private readonly logger: AppLoggerService,
   ) {
     cron.schedule('0 * * * *', this.cleanupOldMarks.bind(this));
   }
@@ -21,9 +20,8 @@ export class MarkCleanupService {
     try {
       await this.markRepository.delete({ createdAt: LessThan(twelveHoursAgo) });
       this.logger.log('Old marks deleted');
-      this.appLogger.log('Old marks deleted');
     } catch (error) {
-      this.appLogger.error('Error deleting old marks:', error);
+      this.logger.error('Error deleting old marks:', error);
     }
   }
 }
