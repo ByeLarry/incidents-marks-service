@@ -62,9 +62,12 @@ export class MarksService implements OnApplicationBootstrap {
         ])
         .getMany();
 
-      this.searchService.update<Mark[]>(marks, MsgSearchEnum.SET_MARKS);
+      if (marks.length === 0) return;
+
+      this.searchService.update(marks, MsgSearchEnum.SET_MARKS);
     });
   }
+
 
   private createMarkRecvDto(mark: Mark): MarkRecvDto {
     return {
@@ -254,8 +257,8 @@ export class MarksService implements OnApplicationBootstrap {
       await queryRunner.manager.save(mark);
       Promise.all([
         queryRunner.commitTransaction(),
-        this.searchService.update<Mark>(mark, MsgSearchEnum.SET_MARK)
-      ])
+        this.searchService.update(mark, MsgSearchEnum.SET_MARK),
+      ]);
       return this.createMarkRecvDto(mark);
     });
     await queryRunner.release();
@@ -286,7 +289,7 @@ export class MarksService implements OnApplicationBootstrap {
       await queryRunner.manager.delete(Mark, { id });
       Promise.all([
         queryRunner.commitTransaction(),
-        this.searchService.update<Mark>(mark, MsgSearchEnum.DELETE_MARK),
+        this.searchService.update(mark, MsgSearchEnum.DELETE_MARK),
       ]);
       return this.createMarkRecvDto(mark);
     });

@@ -3,6 +3,7 @@ import { MessagePattern, Payload } from '@nestjs/microservices';
 import { CategoriesService } from './categories.service';
 import { CreateCategoryDto, DeleteCategoryDto, UpdateCategoryDto } from './dto';
 import { MsgCategoriesEnum } from '../libs/enums';
+import { SearchDto } from '../libs/dto';
 
 @Controller()
 export class CategoriesController {
@@ -31,5 +32,10 @@ export class CategoriesController {
   @MessagePattern(MsgCategoriesEnum.CATEGORIES_STATS)
   getCategoriesStats() {
     return this.categoriesService.getCategoriesStats();
+  }
+
+  @MessagePattern(MsgCategoriesEnum.SEARCH_CATEGORIES)
+  searchCategories(@Payload() dto: SearchDto) {
+    return this.categoriesService.searchCategories(dto);
   }
 }

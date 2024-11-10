@@ -1,3 +1,5 @@
+import { MsgSearchEnum } from './message-search.enum';
+
 export enum MsgMarksEnum {
   MAP_INIT = 'mark.nearest',
   MARK_GET = 'mark.one',
@@ -7,4 +9,5 @@ export enum MsgMarksEnum {
   CREATE_MARK = 'mark.create',
   GET_ALL_MARKS = 'mark.all',
   DELETE_MARK = 'mark.delete',
+  SEARCH_MARKS = MsgSearchEnum.SEARCH_MARKS,
 }

@@ -2,9 +2,10 @@ import { HttpStatus, Injectable, OnApplicationBootstrap } from '@nestjs/common';
 import { CategoryDto, MicroserviceResponseStatus } from '../marks/dto';
 import { MicroserviceResponseStatusFabric } from '../libs/utils';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { Category } from './entities';
 import {
+  CategoriesSearchDto,
   CategoriesStatsDto,
   CreateCategoryDto,
   DeleteCategoryDto,
@@ -13,6 +14,8 @@ import {
 import { Mark } from '../marks/entities';
 import { MsgSearchEnum } from '../libs/enums';
 import { SearchService } from '../libs/services';
+import { SearchDto } from '../libs/dto';
+import { isArray } from 'class-validator';
 
 type AsyncFunction<T> = () => Promise<T>;
 
@@ -45,7 +48,9 @@ export class CategoriesService implements OnApplicationBootstrap {
     return await this.handleAsyncOperation(async () => {
       const categories = await this.findAll();
 
-      this.searchService.update<CategoryDto[]>(
+      if (isArray(categories) && categories.length === 0) return;
+
+      this.searchService.update(
         categories as CategoryDto[],
         MsgSearchEnum.SET_CATEGORIES,
       );
@@ -69,10 +74,7 @@ export class CategoriesService implements OnApplicationBootstrap {
       category.color = data.color;
       const newCategory = await this.categoryRep.save(category);
 
-      await this.searchService.update<Category>(
-        newCategory,
-        MsgSearchEnum.SET_CATEGORY,
-      );
+      await this.searchService.update(newCategory, MsgSearchEnum.SET_CATEGORY);
 
       return newCategory;
     });
@@ -109,10 +111,7 @@ export class CategoriesService implements OnApplicationBootstrap {
       category.color = data.color;
       const newCategory = await this.categoryRep.save(category);
 
-      await this.searchService.update<Category>(
-        newCategory,
-        MsgSearchEnum.SET_CATEGORY,
-      );
+      await this.searchService.update(newCategory, MsgSearchEnum.SET_CATEGORY);
       return newCategory;
     });
   }
@@ -142,6 +141,22 @@ export class CategoriesService implements OnApplicationBootstrap {
         stats.total += markCount;
       }
       return stats;
+    });
+  }
+
+  async searchCategories(data: SearchDto) {
+    return await this.handleAsyncOperation(async () => {
+      const res = await this.searchService.search<
+        SearchDto,
+        CategoriesSearchDto[]
+      >(data, MsgSearchEnum.SEARCH_CATEGORIES);
+
+      return this.categoryRep.find({
+        select: ['id', 'name', 'color'],
+        where: {
+          id: In(res.map((el) => el.id)),
+        },
+      });
     });
   }
 }
