@@ -2,7 +2,7 @@ import { HttpStatus, Injectable, OnApplicationBootstrap } from '@nestjs/common';
 import { CoordsDto } from './dto/coords.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Mark } from './entities/mark.entity';
-import { DataSource, MoreThanOrEqual, Repository } from 'typeorm';
+import { DataSource, In, MoreThanOrEqual, Repository } from 'typeorm';
 import { VerifyMarkDto } from './dto/verify-mark.dto';
 import { Verification } from './entities/verification.entity';
 import { MarkDto } from './dto/mark.dto';
@@ -15,6 +15,8 @@ import { ConfigService } from '@nestjs/config';
 import { Category } from '../categories/entities';
 import { MsgSearchEnum } from '../libs/enums';
 import { SearchService } from '../libs/services';
+import { SearchDto } from '../libs/dto';
+import { MarksSearchDto } from './dto';
 
 type AsyncFunction<T> = () => Promise<T>;
 
@@ -67,7 +69,6 @@ export class MarksService implements OnApplicationBootstrap {
       this.searchService.update(marks, MsgSearchEnum.SET_MARKS);
     });
   }
-
 
   private createMarkRecvDto(mark: Mark): MarkRecvDto {
     return {
@@ -202,6 +203,7 @@ export class MarksService implements OnApplicationBootstrap {
   async createMark(
     data: CreateMarkDto,
   ): Promise<MarkRecvDto | MicroserviceResponseStatus> {
+    console.log(data);
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
@@ -217,6 +219,7 @@ export class MarksService implements OnApplicationBootstrap {
           [data.lng, data.lat, 25],
         ),
       ]);
+      console.log(category);
 
       if (!category) {
         await queryRunner.rollbackTransaction();
@@ -266,7 +269,7 @@ export class MarksService implements OnApplicationBootstrap {
   }
 
   async getAllMarks() {
-    return this.handleAsyncOperation(
+    return await this.handleAsyncOperation(
       async () =>
         await this.markRep.query(
           this.customSqlQueryService.getAllPoints(
@@ -296,5 +299,22 @@ export class MarksService implements OnApplicationBootstrap {
     await queryRunner.release();
 
     return result;
+  }
+
+  async searchMarks(data: SearchDto) {
+    return await this.handleAsyncOperation(async () => {
+      const res = await this.searchService.search<SearchDto, MarksSearchDto[]>(
+        data,
+        MsgSearchEnum.SEARCH_MARKS,
+      );
+
+      const resp = await this.markRep.find({
+        where: {
+          id: In(res.map((el) => el.id)),
+        },
+      });
+
+      return resp;
+    });
   }
 }

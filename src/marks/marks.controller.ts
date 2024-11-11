@@ -6,6 +6,7 @@ import { Controller } from '@nestjs/common';
 import { VerifyMarkDto } from './dto/verify-mark.dto';
 import { MarkDto } from './dto/mark.dto';
 import { CreateMarkDto } from './dto/create-mark.dto';
+import { SearchDto } from '../libs/dto';
 
 @Controller()
 export class MarksController {
@@ -44,5 +45,10 @@ export class MarksController {
   @MessagePattern(MsgMarksEnum.DELETE_MARK)
   deleteMark(@Payload() id: number) {
     return this.marksService.deleteMarkById(id);
+  }
+
+  @MessagePattern(MsgMarksEnum.SEARCH_MARKS)
+  searchCategories(@Payload() dto: SearchDto) {
+    return this.marksService.searchMarks(dto);
   }
 }

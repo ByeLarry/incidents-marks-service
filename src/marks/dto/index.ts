@@ -6,3 +6,4 @@ export * from './mark.dto';
 export * from './microservice-response-status.dto';
 export * from './verify-mark.dto';
 export * from './address.dto';
+export * from './marks-search.dto';
