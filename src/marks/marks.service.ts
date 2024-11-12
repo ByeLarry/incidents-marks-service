@@ -38,7 +38,6 @@ export class MarksService implements OnApplicationBootstrap {
     try {
       return await operation();
     } catch (error) {
-      console.error(error);
       const res = MicroserviceResponseStatusFabric.create(
         HttpStatus.INTERNAL_SERVER_ERROR,
         error,
@@ -203,7 +202,6 @@ export class MarksService implements OnApplicationBootstrap {
   async createMark(
     data: CreateMarkDto,
   ): Promise<MarkRecvDto | MicroserviceResponseStatus> {
-    console.log(data);
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
@@ -219,7 +217,6 @@ export class MarksService implements OnApplicationBootstrap {
           [data.lng, data.lat, 25],
         ),
       ]);
-      console.log(category);
 
       if (!category) {
         await queryRunner.rollbackTransaction();
@@ -277,6 +274,7 @@ export class MarksService implements OnApplicationBootstrap {
           ),
         ),
     );
+
   }
 
   async deleteMarkById(id: number) {
@@ -307,14 +305,14 @@ export class MarksService implements OnApplicationBootstrap {
         data,
         MsgSearchEnum.SEARCH_MARKS,
       );
-
-      const resp = await this.markRep.find({
+      const marksFromDb = await this.markRep.find({
+        select: ['id', 'title', 'category', 'lat', 'lng'],
         where: {
           id: In(res.map((el) => el.id)),
         },
       });
 
-      return resp;
+      return marksFromDb;
     });
   }
 }
