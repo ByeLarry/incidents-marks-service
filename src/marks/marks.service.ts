@@ -81,7 +81,11 @@ export class MarksService implements OnApplicationBootstrap {
     };
   }
 
-  async getMarks(
+  /**
+   * @deprecated
+   * 
+   */
+  async getNearestMarks(
     data: CoordsDto,
   ): Promise<MarkRecvDto[] | MicroserviceResponseStatus> {
     return await this.handleAsyncOperation(

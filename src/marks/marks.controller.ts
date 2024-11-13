@@ -12,9 +12,11 @@ import { SearchDto } from '../libs/dto';
 export class MarksController {
   constructor(private readonly marksService: MarksService) {}
 
+  
   @MessagePattern(MsgMarksEnum.MAP_INIT)
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   getMarks(@Payload() data: CoordsDto) {
-    return this.marksService.getMarks(data);
+    return this.marksService.getAllMarks();
   }
 
   @MessagePattern(MsgMarksEnum.MARK_GET)
