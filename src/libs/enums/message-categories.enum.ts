@@ -8,4 +8,5 @@ export enum MsgCategoriesEnum {
   DELETE_CATEGORY = 'category.delete',
   GET_CATEGORY = 'category.one',
   SEARCH_CATEGORIES = MsgSearchEnum.SEARCH_CATEGORIES,
+  REINDEX = 'category.reindex'
 }

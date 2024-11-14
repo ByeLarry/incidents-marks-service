@@ -45,16 +45,7 @@ export class CategoriesService implements OnApplicationBootstrap {
   }
 
   async onApplicationBootstrap() {
-    return await this.handleAsyncOperation(async () => {
-      const categories = await this.findAll();
-
-      if (isArray(categories) && categories.length === 0) return;
-
-      this.searchService.update(
-        categories as CategoryDto[],
-        MsgSearchEnum.SET_CATEGORIES,
-      );
-    });
+    this.reindexSearhchEngine();
   }
 
   async findAll() {
@@ -156,6 +147,22 @@ export class CategoriesService implements OnApplicationBootstrap {
           id: In(res.map((el) => el.id)),
         },
       });
+    });
+  }
+
+  async reindexSearhchEngine() {
+    return await this.handleAsyncOperation(async () => {
+      const categories = await this.findAll();
+
+      if (isArray(categories) && categories.length === 0)
+        return MicroserviceResponseStatusFabric.create(HttpStatus.NOT_FOUND);
+
+      this.searchService.update(
+        categories as CategoryDto[],
+        MsgSearchEnum.SET_CATEGORIES,
+      );
+
+      return MicroserviceResponseStatusFabric.create(HttpStatus.NO_CONTENT);
     });
   }
 }

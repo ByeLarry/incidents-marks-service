@@ -12,7 +12,6 @@ import { SearchDto } from '../libs/dto';
 export class MarksController {
   constructor(private readonly marksService: MarksService) {}
 
-  
   @MessagePattern(MsgMarksEnum.MAP_INIT)
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   getMarks(@Payload() data: CoordsDto) {
@@ -52,5 +51,10 @@ export class MarksController {
   @MessagePattern(MsgMarksEnum.SEARCH_MARKS)
   searchCategories(@Payload() dto: SearchDto) {
     return this.marksService.searchMarks(dto);
+  }
+
+  @MessagePattern(MsgMarksEnum.REINDEX)
+  async reindexSearhchEngine() {
+    return this.marksService.reindexSearhchEngine();
   }
 }

@@ -47,26 +47,7 @@ export class MarksService implements OnApplicationBootstrap {
   }
 
   async onApplicationBootstrap() {
-    return await this.handleAsyncOperation(async () => {
-      const marks = await this.markRep
-        .createQueryBuilder('mark')
-        .select([
-          'mark.id',
-          'mark.lat',
-          'mark.lng',
-          'mark.addressDescription',
-          'mark.addressName',
-          'mark.title',
-          'mark.description',
-          'mark.createdAt',
-          'mark.updatedAt',
-        ])
-        .getMany();
-
-      if (marks.length === 0) return;
-
-      this.searchService.update(marks, MsgSearchEnum.SET_MARKS);
-    });
+    this.reindexSearhchEngine();
   }
 
   private createMarkRecvDto(mark: Mark): MarkRecvDto {
@@ -83,7 +64,7 @@ export class MarksService implements OnApplicationBootstrap {
 
   /**
    * @deprecated
-   * 
+   *
    */
   async getNearestMarks(
     data: CoordsDto,
@@ -278,7 +259,6 @@ export class MarksService implements OnApplicationBootstrap {
           ),
         ),
     );
-
   }
 
   async deleteMarkById(id: number) {
@@ -317,6 +297,32 @@ export class MarksService implements OnApplicationBootstrap {
       });
 
       return marksFromDb;
+    });
+  }
+
+  async reindexSearhchEngine() {
+    return await this.handleAsyncOperation(async () => {
+      const marks = await this.markRep
+        .createQueryBuilder('mark')
+        .select([
+          'mark.id',
+          'mark.lat',
+          'mark.lng',
+          'mark.addressDescription',
+          'mark.addressName',
+          'mark.title',
+          'mark.description',
+          'mark.createdAt',
+          'mark.updatedAt',
+        ])
+        .getMany();
+
+      if (marks.length === 0)
+        return MicroserviceResponseStatusFabric.create(HttpStatus.NOT_FOUND);
+
+      this.searchService.update(marks, MsgSearchEnum.SET_MARKS);
+
+      return MicroserviceResponseStatusFabric.create(HttpStatus.NO_CONTENT);
     });
   }
 }

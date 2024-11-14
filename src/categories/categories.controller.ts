@@ -38,4 +38,9 @@ export class CategoriesController {
   searchCategories(@Payload() dto: SearchDto) {
     return this.categoriesService.searchCategories(dto);
   }
+
+  @MessagePattern(MsgCategoriesEnum.REINDEX)
+  async reindexSearhchEngine() {
+    return this.categoriesService.reindexSearhchEngine();
+  }
 }

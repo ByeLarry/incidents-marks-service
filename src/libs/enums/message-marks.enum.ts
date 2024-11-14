@@ -10,4 +10,5 @@ export enum MsgMarksEnum {
   GET_ALL_MARKS = 'mark.all',
   DELETE_MARK = 'mark.delete',
   SEARCH_MARKS = MsgSearchEnum.SEARCH_MARKS,
+  REINDEX = 'mark.reindex'
 }
