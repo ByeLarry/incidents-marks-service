@@ -152,7 +152,6 @@ export class CategoriesService implements OnApplicationBootstrap {
       >(data, MsgSearchEnum.SEARCH_CATEGORIES);
 
       return this.categoryRep.find({
-        select: ['id', 'name', 'color'],
         where: {
           id: In(res.map((el) => el.id)),
         },
