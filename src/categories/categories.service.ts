@@ -35,80 +35,76 @@ export class CategoriesService implements OnApplicationBootstrap {
     try {
       return await operation();
     } catch (error) {
-      console.error(error);
-      const res = MicroserviceResponseStatusFabric.create(
+      console.error('Error during operation:', error);
+      return MicroserviceResponseStatusFabric.create(
         HttpStatus.INTERNAL_SERVER_ERROR,
         error,
       );
-      return res;
     }
   }
 
-  async onApplicationBootstrap() {
-    this.reindexSearhchEngine();
+  private async findCategoryById(id: number): Promise<Category | null> {
+    return this.categoryRep.findOne({ where: { id } });
   }
 
-  async findAll() {
-    return await this.handleAsyncOperation(async () => {
-      const categories: CategoryDto[] = await this.categoryRep.find({
-        select: ['id', 'name', 'color', 'createdAt', 'updatedAt'],
-      });
+  async onApplicationBootstrap() {
+    await this.reindexSearchEngine();
+  }
 
-      return categories;
-    });
+  async findAllCategories() {
+    return this.handleAsyncOperation(() =>
+      this.categoryRep.find({
+        select: ['id', 'name', 'color', 'createdAt', 'updatedAt'],
+      }),
+    );
   }
 
   async createCategory(data: CreateCategoryDto) {
-    return await this.handleAsyncOperation(async () => {
-      const category = new Category();
-      category.name = data.name;
-      category.color = data.color;
+    return this.handleAsyncOperation(async () => {
+      const category = this.categoryRep.create(data);
       const newCategory = await this.categoryRep.save(category);
 
       await this.searchService.update(newCategory, MsgSearchEnum.SET_CATEGORY);
-
       return newCategory;
     });
   }
 
   async deleteCategory(data: DeleteCategoryDto) {
-    return await this.handleAsyncOperation(async () => {
-      const category = await this.categoryRep.findOne({
-        where: { id: data.id },
-      });
-      if (!category)
+    return this.handleAsyncOperation(async () => {
+      const category = await this.findCategoryById(data.id);
+      if (!category) {
         return MicroserviceResponseStatusFabric.create(HttpStatus.NOT_FOUND);
-      await this.markRep.delete({ category });
+      }
 
-      Promise.all([
-        await this.categoryRep.delete({ id: data.id }),
-        await this.searchService.update(
-          category,
-          MsgSearchEnum.DELETE_CATEGORY,
-        ),
-      ]);
+      await this.markRep.delete({ category });
+      await this.categoryRep.delete({ id: data.id });
+
+      await this.searchService.update(category, MsgSearchEnum.DELETE_CATEGORY);
+
       return category;
     });
   }
 
   async updateCategory(data: UpdateCategoryDto) {
-    return await this.handleAsyncOperation(async () => {
-      const category = await this.categoryRep.findOne({
-        where: { id: data.id },
-      });
-      if (!category)
+    return this.handleAsyncOperation(async () => {
+      const category = await this.findCategoryById(data.id);
+      if (!category) {
         return MicroserviceResponseStatusFabric.create(HttpStatus.NOT_FOUND);
-      category.name = data.name;
-      category.color = data.color;
-      const newCategory = await this.categoryRep.save(category);
+      }
 
-      await this.searchService.update(newCategory, MsgSearchEnum.SET_CATEGORY);
-      return newCategory;
+      Object.assign(category, data);
+      const updatedCategory = await this.categoryRep.save(category);
+
+      await this.searchService.update(
+        updatedCategory,
+        MsgSearchEnum.SET_CATEGORY,
+      );
+      return updatedCategory;
     });
   }
 
   async getCategoriesStats() {
-    return await this.handleAsyncOperation(async () => {
+    return this.handleAsyncOperation(async () => {
       const categories = await this.categoryRep.find({
         select: ['id', 'name'],
       });
@@ -119,45 +115,49 @@ export class CategoriesService implements OnApplicationBootstrap {
       };
 
       for (const category of categories) {
-        const markCount = await this.markRep.count({
+        const incidentsCount = await this.markRep.count({
           where: { category },
         });
 
         stats.incidents.push({
           id: category.id,
           name: category.name,
-          incidentsCount: markCount,
+          incidentsCount,
         });
-
-        stats.total += markCount;
+        stats.total += incidentsCount;
       }
+
       return stats;
     });
   }
 
   async searchCategories(data: SearchDto) {
-    return await this.handleAsyncOperation(async () => {
-      const res = await this.searchService.search<
+    return this.handleAsyncOperation(async () => {
+      const results = await this.searchService.search<
         SearchDto,
         CategoriesSearchDto[]
       >(data, MsgSearchEnum.SEARCH_CATEGORIES);
 
+      if (!results || results.length === 0) {
+        return MicroserviceResponseStatusFabric.create(HttpStatus.NOT_FOUND);
+      }
+
       return this.categoryRep.find({
         where: {
-          id: In(res.map((el) => el.id)),
+          id: In(results.map((el) => el.id)),
         },
       });
     });
   }
 
-  async reindexSearhchEngine() {
-    return await this.handleAsyncOperation(async () => {
-      const categories = await this.findAll();
-
-      if (isArray(categories) && categories.length === 0)
+  async reindexSearchEngine() {
+    return this.handleAsyncOperation(async () => {
+      const categories = await this.findAllCategories();
+      if (!isArray(categories) || categories.length === 0) {
         return MicroserviceResponseStatusFabric.create(HttpStatus.NOT_FOUND);
+      }
 
-      this.searchService.update(
+      await this.searchService.update(
         categories as CategoryDto[],
         MsgSearchEnum.SET_CATEGORIES,
       );

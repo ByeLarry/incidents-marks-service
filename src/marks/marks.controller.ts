@@ -1,6 +1,5 @@
 import { MarksService } from './marks.service';
 import { MsgMarksEnum } from '../libs/enums/message-marks.enum';
-import { CoordsDto } from './dto/coords.dto';
 import { MessagePattern, Payload } from '@nestjs/microservices';
 import { Controller } from '@nestjs/common';
 import { VerifyMarkDto } from './dto/verify-mark.dto';
@@ -13,8 +12,7 @@ export class MarksController {
   constructor(private readonly marksService: MarksService) {}
 
   @MessagePattern(MsgMarksEnum.MAP_INIT)
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  getMarks(@Payload() data: CoordsDto) {
+  getMarks() {
     return this.marksService.getAllMarks();
   }
 
@@ -25,12 +23,12 @@ export class MarksController {
 
   @MessagePattern(MsgMarksEnum.MARK_VERIFY_TRUE)
   verifyTrue(@Payload() data: VerifyMarkDto) {
-    return this.marksService.verifyTrue(data);
+    return this.marksService.verifyMark(data, true);
   }
 
   @MessagePattern(MsgMarksEnum.MARK_VERIFY_FALSE)
   verifyFalse(@Payload() data: VerifyMarkDto) {
-    return this.marksService.verifyFalse(data);
+    return this.marksService.verifyMark(data, false);
   }
 
   @MessagePattern(MsgMarksEnum.CREATE_MARK)
@@ -55,6 +53,6 @@ export class MarksController {
 
   @MessagePattern(MsgMarksEnum.REINDEX)
   async reindexSearhchEngine() {
-    return this.marksService.reindexSearhchEngine();
+    return this.marksService.reindexSearchEngine();
   }
 }

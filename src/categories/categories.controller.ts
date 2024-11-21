@@ -11,7 +11,7 @@ export class CategoriesController {
 
   @MessagePattern(MsgCategoriesEnum.CATEGORIES)
   findAll() {
-    return this.categoriesService.findAll();
+    return this.categoriesService.findAllCategories();
   }
 
   @MessagePattern(MsgCategoriesEnum.CREATE_CATEGORY)
@@ -41,6 +41,6 @@ export class CategoriesController {
 
   @MessagePattern(MsgCategoriesEnum.REINDEX)
   async reindexSearhchEngine() {
-    return this.categoriesService.reindexSearhchEngine();
+    return this.categoriesService.reindexSearchEngine();
   }
 }

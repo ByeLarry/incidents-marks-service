@@ -1,24 +1,25 @@
 import { HttpStatus, Injectable, OnApplicationBootstrap } from '@nestjs/common';
-import { CoordsDto } from './dto/coords.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Mark } from './entities/mark.entity';
 import { DataSource, In, MoreThanOrEqual, Repository } from 'typeorm';
-import { VerifyMarkDto } from './dto/verify-mark.dto';
-import { Verification } from './entities/verification.entity';
-import { MarkDto } from './dto/mark.dto';
-import { MarkRecvDto } from './dto/mark-recv.dto';
-import { CreateMarkDto } from './dto/create-mark.dto';
-import { MicroserviceResponseStatus } from './dto/microservice-response-status.dto';
-import { MicroserviceResponseStatusFabric } from '../libs/utils/microservice-response-status-fabric.util';
-import { CustomSqlQueryService } from '../libs/services/custom-sql-query.service';
-import { ConfigService } from '@nestjs/config';
-import { Category } from '../categories/entities';
-import { MsgSearchEnum } from '../libs/enums';
-import { SearchService } from '../libs/services';
-import { SearchDto } from '../libs/dto';
-import { MarksSearchDto } from './dto';
 
-type AsyncFunction<T> = () => Promise<T>;
+import { Mark } from './entities/mark.entity';
+import { Verification } from './entities/verification.entity';
+import { Category } from '../categories/entities';
+
+import {
+  CoordsDto,
+  VerifyMarkDto,
+  MarkDto,
+  MarkRecvDto,
+  CreateMarkDto,
+  MicroserviceResponseStatus,
+} from './dto';
+import { MicroserviceResponseStatusFabric } from '../libs/utils';
+import { CustomSqlQueryService, SearchService } from '../libs/services';
+import { ConfigService } from '@nestjs/config';
+import { MsgSearchEnum } from '../libs/enums';
+import { MarksSearchDto } from './dto';
+import { SearchDto } from '../libs/dto';
 
 @Injectable()
 export class MarksService implements OnApplicationBootstrap {
@@ -32,22 +33,30 @@ export class MarksService implements OnApplicationBootstrap {
     private readonly searchService: SearchService,
   ) {}
 
-  private async handleAsyncOperation<T>(
-    operation: AsyncFunction<T>,
+  async onApplicationBootstrap(): Promise<void> {
+    await this.reindexSearchEngine();
+  }
+
+  private async handleTransaction<T>(
+    operation: (queryRunner: any) => Promise<T>,
   ): Promise<T | MicroserviceResponseStatus> {
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
     try {
-      return await operation();
+      const result = await operation(queryRunner);
+      await queryRunner.commitTransaction();
+      return result;
     } catch (error) {
-      const res = MicroserviceResponseStatusFabric.create(
+      await queryRunner.rollbackTransaction();
+      return MicroserviceResponseStatusFabric.create(
         HttpStatus.INTERNAL_SERVER_ERROR,
         error,
       );
-      return res;
+    } finally {
+      await queryRunner.release();
     }
-  }
-
-  async onApplicationBootstrap() {
-    this.reindexSearhchEngine();
   }
 
   private createMarkRecvDto(mark: Mark): MarkRecvDto {
@@ -62,28 +71,20 @@ export class MarksService implements OnApplicationBootstrap {
     };
   }
 
-  /**
-   * @deprecated
-   *
-   */
   async getNearestMarks(
     data: CoordsDto,
   ): Promise<MarkRecvDto[] | MicroserviceResponseStatus> {
-    return await this.handleAsyncOperation(
-      async () =>
-        await this.markRep.query(
-          this.customSqlQueryService.getNearestPoints(
-            this.configService.get('DB_SCHEMA') || 'public',
-          ),
-          [data.lng, data.lat],
-        ),
-    );
+    return this.handleOperation(async () => {
+      const schema = this.configService.get('DB_SCHEMA') || 'public';
+      const query = this.customSqlQueryService.getNearestPoints(schema);
+      return await this.markRep.query(query, [data.lng, data.lat]);
+    });
   }
 
   async getMark(
     data: MarkDto,
   ): Promise<MarkRecvDto | MicroserviceResponseStatus> {
-    return await this.handleAsyncOperation(async () => {
+    return this.handleOperation(async () => {
       const mark = await this.markRep.findOne({
         where: { id: Number(data.markId) },
         relations: ['category'],
@@ -91,217 +92,142 @@ export class MarksService implements OnApplicationBootstrap {
       if (!mark)
         return MicroserviceResponseStatusFabric.create(HttpStatus.NOT_FOUND);
 
-      const verified = await this.verificationRep.count({
-        where: { mark: { id: Number(data.markId) } },
-      });
-
-      const distance: Array<{ distance: number }> = await this.markRep.query(
-        this.customSqlQueryService.getDistance(
-          this.configService.get('DB_SCHEMA') || 'public',
-        ),
-        [data.lat, data.lng, data.markId],
-      );
+      const [verifiedCount, distance] = await Promise.all([
+        this.verificationRep.count({
+          where: { mark: { id: Number(data.markId) } },
+        }),
+        this.getDistance(data.lat, data.lng, Number(data.markId)),
+      ]);
 
       const userVerification = await this.verificationRep.findOne({
-        where: {
-          mark: { id: Number(data.markId) },
-          userId: data.userId,
-        },
+        where: { mark: { id: Number(data.markId) }, userId: data.userId },
       });
+
       return {
         ...mark,
         categoryId: mark.category.id,
-        verified,
+        verified: verifiedCount,
         isMyVerify: !!userVerification,
-        distance: distance[0].distance,
+        distance: distance,
       };
     });
   }
 
-  async verifyTrue(
+  async verifyMark(
     data: VerifyMarkDto,
+    isTrue: boolean,
   ): Promise<{ verified: number } | MicroserviceResponseStatus> {
-    const queryRunner = this.dataSource.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
-
-    const result = await this.handleAsyncOperation(async () => {
+    return this.handleTransaction(async (queryRunner) => {
       const mark = await queryRunner.manager.findOne(Mark, {
         where: { id: data.markId },
       });
-
-      if (!mark) {
-        await queryRunner.rollbackTransaction();
+      if (!mark)
         return MicroserviceResponseStatusFabric.create(HttpStatus.NOT_FOUND);
+
+      if (isTrue) {
+        const verification = queryRunner.manager.create(Verification, {
+          mark,
+          userId: data.userId,
+          createdAt: new Date(),
+        });
+        await queryRunner.manager.save(verification);
+      } else {
+        await queryRunner.manager.delete(Verification, {
+          mark: { id: data.markId },
+        });
       }
 
-      const newVerification = new Verification();
-      newVerification.mark = mark;
-      newVerification.userId = data.userId;
-      newVerification.createdAt = new Date();
-      await queryRunner.manager.save(newVerification);
-
-      const verified = await queryRunner.manager.count(Verification, {
-        where: { mark: { id: Number(data.markId) } },
+      const verifiedCount = await queryRunner.manager.count(Verification, {
+        where: { mark: { id: data.markId } },
       });
-
-      await queryRunner.commitTransaction();
-      return { verified };
+      return { verified: verifiedCount };
     });
-    await queryRunner.release();
-    return result;
-  }
-
-  async verifyFalse(
-    data: VerifyMarkDto,
-  ): Promise<{ verified: number } | MicroserviceResponseStatus> {
-    const queryRunner = this.dataSource.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
-
-    const result = await this.handleAsyncOperation(async () => {
-      const mark = await queryRunner.manager.findOne(Mark, {
-        where: { id: data.markId },
-      });
-
-      if (!mark) {
-        queryRunner.rollbackTransaction();
-        return MicroserviceResponseStatusFabric.create(HttpStatus.NOT_FOUND);
-      }
-
-      await queryRunner.manager.delete(Verification, {
-        mark: { id: data.markId },
-      });
-
-      const verified = await queryRunner.manager.count(Verification, {
-        where: { mark: { id: Number(data.markId) } },
-      });
-
-      await queryRunner.commitTransaction();
-      return { verified };
-    });
-    await queryRunner.release();
-    return result;
   }
 
   async createMark(
     data: CreateMarkDto,
   ): Promise<MarkRecvDto | MicroserviceResponseStatus> {
-    const queryRunner = this.dataSource.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
-    const result = await this.handleAsyncOperation(async () => {
-      const [category, checkMark] = await Promise.all([
+    return this.handleTransaction(async (queryRunner) => {
+      const schema = this.configService.get('DB_SCHEMA') || 'public';
+      const [category, existingMarks] = await Promise.all([
         queryRunner.manager.findOne(Category, {
           where: { id: data.categoryId },
         }),
         queryRunner.manager.query(
-          this.customSqlQueryService.checkApproximateDistance(
-            this.configService.get('DB_SCHEMA') || 'public',
-          ),
+          this.customSqlQueryService.checkApproximateDistance(schema),
           [data.lng, data.lat, 25],
         ),
       ]);
 
-      if (!category) {
-        await queryRunner.rollbackTransaction();
+      if (!category)
         return MicroserviceResponseStatusFabric.create(HttpStatus.NOT_FOUND);
-      }
-
-      if (checkMark.length > 0) {
-        await queryRunner.rollbackTransaction();
+      if (existingMarks.length > 0)
         return MicroserviceResponseStatusFabric.create(HttpStatus.CONFLICT);
-      }
 
-      const twelveHoursAgo = new Date();
-      twelveHoursAgo.setHours(twelveHoursAgo.getHours() - 12);
-
-      const countLastTwelveHoursMarks = await queryRunner.manager.count(Mark, {
-        where: {
-          userId: data.userId,
-          createdAt: MoreThanOrEqual(twelveHoursAgo),
-        },
-      });
-
-      if (countLastTwelveHoursMarks >= 5) {
-        await queryRunner.rollbackTransaction();
+      const countLastTwelveHoursMarks = await this.countUserMarksLast12Hours(
+        queryRunner,
+        data.userId,
+      );
+      if (countLastTwelveHoursMarks >= 5)
         return MicroserviceResponseStatusFabric.create(
           HttpStatus.TOO_MANY_REQUESTS,
         );
-      }
 
-      const mark = new Mark();
-      mark.lat = data.lat;
-      mark.lng = data.lng;
-      mark.title = data.title;
-      mark.description = data.description;
-      mark.userId = data.userId;
-      mark.category = category;
-      mark.addressName = data.address.name;
-      mark.addressDescription = data.address.description;
+      const mark = queryRunner.manager.create(Mark, {
+        ...data,
+        category,
+        addressName: data.address.name,
+        addressDescription: data.address.description,
+      });
       await queryRunner.manager.save(mark);
-      Promise.all([
-        queryRunner.commitTransaction(),
-        this.searchService.update(mark, MsgSearchEnum.SET_MARK),
-      ]);
+      this.searchService.update(mark, MsgSearchEnum.SET_MARK);
+
       return this.createMarkRecvDto(mark);
     });
-    await queryRunner.release();
-    return result;
   }
 
-  async getAllMarks() {
-    return await this.handleAsyncOperation(
-      async () =>
-        await this.markRep.query(
-          this.customSqlQueryService.getAllPoints(
-            this.configService.get('DB_SCHEMA') || 'public',
-          ),
-        ),
-    );
+  async getAllMarks(): Promise<Mark[]> {
+    return this.handleOperation(async () => {
+      const schema = this.configService.get('DB_SCHEMA') || 'public';
+      return await this.markRep.query(
+        this.customSqlQueryService.getAllPoints(schema),
+      );
+    });
   }
 
   async deleteMarkById(id: number) {
-    const queryRunner = this.dataSource.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
-    const result = await this.handleAsyncOperation(async () => {
+    return this.handleTransaction(async (queryRunner) => {
       const mark = await queryRunner.manager.findOne(Mark, { where: { id } });
-      if (!mark) {
-        await queryRunner.rollbackTransaction();
+      if (!mark)
         return MicroserviceResponseStatusFabric.create(HttpStatus.NOT_FOUND);
-      }
+
       await queryRunner.manager.delete(Mark, { id });
-      Promise.all([
-        queryRunner.commitTransaction(),
-        this.searchService.update(mark, MsgSearchEnum.DELETE_MARK),
-      ]);
+      this.searchService.update(mark, MsgSearchEnum.DELETE_MARK);
+
       return this.createMarkRecvDto(mark);
     });
-    await queryRunner.release();
-
-    return result;
   }
 
-  async searchMarks(data: SearchDto) {
-    return await this.handleAsyncOperation(async () => {
-      const res = await this.searchService.search<SearchDto, MarksSearchDto[]>(
-        data,
-        MsgSearchEnum.SEARCH_MARKS,
-      );
-      const marksFromDb = await this.markRep.find({
-        select: ['id', 'title', 'category', 'lat', 'lng'],
-        where: {
-          id: In(res.map((el) => el.id)),
-        },
-      });
+  async searchMarks(
+    data: SearchDto,
+  ): Promise<Mark[] | MicroserviceResponseStatus> {
+    return this.handleOperation(async () => {
+      const result = await this.searchService.search<
+        SearchDto,
+        MarksSearchDto[]
+      >(data, MsgSearchEnum.SEARCH_MARKS);
+      if (!result)
+        return MicroserviceResponseStatusFabric.create(HttpStatus.NOT_FOUND);
 
-      return marksFromDb;
+      return this.markRep.find({
+        select: ['id', 'title', 'category', 'lat', 'lng'],
+        where: { id: In(result.map((el) => el.id)) },
+      });
     });
   }
 
-  async reindexSearhchEngine() {
-    return await this.handleAsyncOperation(async () => {
+  async reindexSearchEngine(): Promise<MicroserviceResponseStatus> {
+    return this.handleOperation(async () => {
       const marks = await this.markRep
         .createQueryBuilder('mark')
         .select([
@@ -310,10 +236,6 @@ export class MarksService implements OnApplicationBootstrap {
           'mark.lng',
           'mark.addressDescription',
           'mark.addressName',
-          'mark.title',
-          'mark.description',
-          'mark.createdAt',
-          'mark.updatedAt',
         ])
         .getMany();
 
@@ -321,8 +243,45 @@ export class MarksService implements OnApplicationBootstrap {
         return MicroserviceResponseStatusFabric.create(HttpStatus.NOT_FOUND);
 
       this.searchService.update(marks, MsgSearchEnum.SET_MARKS);
-
       return MicroserviceResponseStatusFabric.create(HttpStatus.NO_CONTENT);
     });
+  }
+
+  private async handleOperation<T>(
+    operation: () => Promise<T>,
+  ): Promise<T | MicroserviceResponseStatus> {
+    try {
+      return await operation();
+    } catch (error) {
+      return MicroserviceResponseStatusFabric.create(
+        HttpStatus.INTERNAL_SERVER_ERROR,
+        error,
+      );
+    }
+  }
+
+  private async countUserMarksLast12Hours(
+    queryRunner: any,
+    userId: string,
+  ): Promise<number> {
+    const twelveHoursAgo = new Date();
+    twelveHoursAgo.setHours(twelveHoursAgo.getHours() - 12);
+
+    return queryRunner.manager.count(Mark, {
+      where: { userId, createdAt: MoreThanOrEqual(twelveHoursAgo) },
+    });
+  }
+
+  private async getDistance(
+    lat: number,
+    lng: number,
+    markId: number,
+  ): Promise<number> {
+    const schema = this.configService.get('DB_SCHEMA') || 'public';
+    const distances = await this.markRep.query(
+      this.customSqlQueryService.getDistance(schema),
+      [lat, lng, markId],
+    );
+    return distances[0]?.distance || 0;
   }
 }
