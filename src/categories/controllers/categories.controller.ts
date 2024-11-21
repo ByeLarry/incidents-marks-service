@@ -1,9 +1,12 @@
 import { Controller } from '@nestjs/common';
 import { MessagePattern, Payload } from '@nestjs/microservices';
-import { CategoriesService } from './categories.service';
-import { CreateCategoryDto, DeleteCategoryDto, UpdateCategoryDto } from './dto';
-import { MsgCategoriesEnum } from '../libs/enums';
-import { SearchDto } from '../libs/dto';
+import { MsgCategoriesEnum } from '../../libs/enums';
+import {
+  CreateCategoryDto,
+  DeleteCategoryDto,
+  UpdateCategoryDto,
+} from '../dto';
+import { CategoriesService } from '../services';
 
 @Controller()
 export class CategoriesController {
@@ -34,13 +37,4 @@ export class CategoriesController {
     return this.categoriesService.getCategoriesStats();
   }
 
-  @MessagePattern(MsgCategoriesEnum.SEARCH_CATEGORIES)
-  searchCategories(@Payload() dto: SearchDto) {
-    return this.categoriesService.searchCategories(dto);
-  }
-
-  @MessagePattern(MsgCategoriesEnum.REINDEX)
-  async reindexSearhchEngine() {
-    return this.categoriesService.reindexSearchEngine();
-  }
 }

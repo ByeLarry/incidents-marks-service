@@ -1,11 +1,10 @@
-import { MarksService } from './marks.service';
-import { MsgMarksEnum } from '../libs/enums/message-marks.enum';
+import { MsgMarksEnum } from '../../libs/enums/message-marks.enum';
 import { MessagePattern, Payload } from '@nestjs/microservices';
 import { Controller } from '@nestjs/common';
-import { VerifyMarkDto } from './dto/verify-mark.dto';
-import { MarkDto } from './dto/mark.dto';
-import { CreateMarkDto } from './dto/create-mark.dto';
-import { SearchDto } from '../libs/dto';
+import { VerifyMarkDto } from '../dto/verify-mark.dto';
+import { MarkDto } from '../dto/mark.dto';
+import { CreateMarkDto } from '../dto/create-mark.dto';
+import { MarksService } from '../services';
 
 @Controller()
 export class MarksController {
@@ -44,15 +43,5 @@ export class MarksController {
   @MessagePattern(MsgMarksEnum.DELETE_MARK)
   deleteMark(@Payload() id: number) {
     return this.marksService.deleteMarkById(id);
-  }
-
-  @MessagePattern(MsgMarksEnum.SEARCH_MARKS)
-  searchCategories(@Payload() dto: SearchDto) {
-    return this.marksService.searchMarks(dto);
-  }
-
-  @MessagePattern(MsgMarksEnum.REINDEX)
-  async reindexSearhchEngine() {
-    return this.marksService.reindexSearchEngine();
   }
 }
