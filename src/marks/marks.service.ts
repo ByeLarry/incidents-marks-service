@@ -20,6 +20,7 @@ import { ConfigService } from '@nestjs/config';
 import { MsgSearchEnum } from '../libs/enums';
 import { MarksSearchDto } from './dto';
 import { SearchDto } from '../libs/dto';
+import { AppLoggerService } from '../libs/helpers';
 
 @Injectable()
 export class MarksService implements OnApplicationBootstrap {
@@ -31,6 +32,7 @@ export class MarksService implements OnApplicationBootstrap {
     private readonly customSqlQueryService: CustomSqlQueryService,
     private readonly configService: ConfigService,
     private readonly searchService: SearchService,
+    private readonly logger: AppLoggerService,
   ) {}
 
   async onApplicationBootstrap(): Promise<void> {
@@ -253,6 +255,7 @@ export class MarksService implements OnApplicationBootstrap {
     try {
       return await operation();
     } catch (error) {
+      this.logger.error(`Message - ${error.message}`);
       return MicroserviceResponseStatusFabric.create(
         HttpStatus.INTERNAL_SERVER_ERROR,
         error,

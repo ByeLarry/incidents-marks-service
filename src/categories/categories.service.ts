@@ -16,6 +16,7 @@ import { MsgSearchEnum } from '../libs/enums';
 import { SearchService } from '../libs/services';
 import { SearchDto } from '../libs/dto';
 import { isArray } from 'class-validator';
+import { AppLoggerService } from '../libs/helpers';
 
 type AsyncFunction<T> = () => Promise<T>;
 
@@ -27,6 +28,7 @@ export class CategoriesService implements OnApplicationBootstrap {
     @InjectRepository(Mark)
     private readonly markRep: Repository<Mark>,
     private readonly searchService: SearchService,
+    private readonly logger: AppLoggerService
   ) {}
 
   private async handleAsyncOperation<T>(
@@ -35,7 +37,7 @@ export class CategoriesService implements OnApplicationBootstrap {
     try {
       return await operation();
     } catch (error) {
-      console.error('Error during operation:', error);
+      this.logger.error(`Message - ${error.message}`);
       return MicroserviceResponseStatusFabric.create(
         HttpStatus.INTERNAL_SERVER_ERROR,
         error,
