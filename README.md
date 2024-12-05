@@ -45,9 +45,8 @@ npm run migration:create src/migrations/<migrationName>
 
 _Диаграммы можно сохранять и редактировать в ***[draw.io](https://app.diagrams.net/)***_
   
-- ### ER-диагрмма 
- ![Отношение сущностей (точки)](https://github.com/user-attachments/assets/a731f019-a763-46c9-b132-a2ea4f9b7dab)
-
+- ### ER-диагрмма
+  ![Отношение сущностей (происшествия)](https://github.com/user-attachments/assets/eeb6960d-f783-49f9-b6c7-cffd74f5d544)
 
 - ### Компоненты микросервиса инцидентов
   ![Компоненты микросервиса инцидентов](https://github.com/user-attachments/assets/97fcced1-2c79-4477-abdd-9dac45b3167e)
