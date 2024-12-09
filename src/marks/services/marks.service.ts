@@ -1,10 +1,9 @@
 import { Injectable, HttpStatus } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource, MoreThanOrEqual } from 'typeorm';
 import { Category } from '../../categories/entities';
 import { MsgSearchEnum } from '../../libs/enums';
-import { AppLoggerService, handleAsyncOperation } from '../../libs/helpers';
+import { handleAsyncOperation } from '../../libs/helpers';
 import { CustomSqlQueryService, SearchService } from '../../libs/services';
 import { MicroserviceResponseStatusFabric } from '../../libs/utils';
 import {
@@ -25,9 +24,7 @@ export class MarksService {
     private readonly verificationRep: Repository<Verification>,
     private readonly dataSource: DataSource,
     private readonly customSqlQueryService: CustomSqlQueryService,
-    private readonly configService: ConfigService,
     private readonly searchService: SearchService,
-    private readonly logger: AppLoggerService,
   ) {}
 
   private async handleTransaction<T>(
@@ -68,8 +65,7 @@ export class MarksService {
     data: CoordsDto,
   ): Promise<MarkRecvDto[] | MicroserviceResponseStatus> {
     return handleAsyncOperation(async () => {
-      const schema = this.configService.get('DB_SCHEMA') || 'public';
-      const query = this.customSqlQueryService.getNearestPoints(schema);
+      const query = this.customSqlQueryService.getNearestPoints();
       return await this.markRep.query(query, [data.lng, data.lat]);
     });
   }
@@ -141,13 +137,12 @@ export class MarksService {
     data: CreateMarkDto,
   ): Promise<MarkRecvDto | MicroserviceResponseStatus> {
     return this.handleTransaction(async (queryRunner) => {
-      const schema = this.configService.get('DB_SCHEMA') || 'public';
       const [category, existingMarks] = await Promise.all([
         queryRunner.manager.findOne(Category, {
           where: { id: data.categoryId },
         }),
         queryRunner.manager.query(
-          this.customSqlQueryService.checkApproximateDistance(schema),
+          this.customSqlQueryService.checkApproximateDistance(),
           [data.lng, data.lat, 25],
         ),
       ]);
@@ -179,12 +174,24 @@ export class MarksService {
     });
   }
 
-  async getAllMarks(): Promise<Mark[]> {
+  async getAllMarks(): Promise<Mark[] | MicroserviceResponseStatus> {
     return handleAsyncOperation(async () => {
-      const schema = this.configService.get('DB_SCHEMA') || 'public';
-      return await this.markRep.query(
-        this.customSqlQueryService.getAllPoints(schema),
+      const marks = await this.markRep.find({
+        relations: ['category'],
+        select: ['lng', 'lat', 'id'],
+      });
+
+      const result: Mark[] = await Promise.all(
+        marks.map(async (mark) => {
+          return {
+            ...mark,
+            color: mark.category.color,
+            categoryId: mark.category.id,
+          };
+        }),
       );
+
+      return result;
     });
   }
 
@@ -218,9 +225,8 @@ export class MarksService {
     lng: number,
     markId: number,
   ): Promise<number> {
-    const schema = this.configService.get('DB_SCHEMA') || 'public';
     const distances = await this.markRep.query(
-      this.customSqlQueryService.getDistance(schema),
+      this.customSqlQueryService.getDistance(),
       [lat, lng, markId],
     );
     return distances[0]?.distance || 0;

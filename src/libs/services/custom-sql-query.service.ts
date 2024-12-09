@@ -1,8 +1,15 @@
 import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class CustomSqlQueryService {
-  getNearestPoints(schema: string) {
+  private readonly schema: string;
+
+  constructor(private readonly configService: ConfigService) {
+    this.schema = this.configService.get<string>('DB_SCHEMA', 'public');
+  }
+
+  getNearestPoints() {
     return `
         SELECT sorted_marks.lng, sorted_marks.lat, sorted_marks.mark_id AS "id", sorted_marks."categoryId", category.color
         FROM (
@@ -11,42 +18,31 @@ export class CustomSqlQueryService {
                 ST_SetSRID(ST_MakePoint($1, $2), 4326)::geography,
                 ST_SetSRID(ST_MakePoint(lng, lat), 4326)::geography
             ) AS distance
-            FROM ${schema}.mark
+            FROM ${this.schema}.mark
         ) AS sorted_marks
-        JOIN ${schema}.category ON sorted_marks."categoryId" = category.category_id
+        JOIN ${this.schema}.category ON sorted_marks."categoryId" = category.category_id
         ORDER BY sorted_marks.distance
         LIMIT 50;
         `;
   }
 
-  getAllPoints(schema: string) {
-    return `
-        SELECT marks.lng, marks.lat, marks.mark_id AS "id", marks."categoryId", category.color
-        FROM (
-            SELECT lng, lat, mark_id, "categoryId"
-            FROM ${schema}.mark
-        ) AS marks
-        JOIN ${schema}.category ON marks."categoryId" = category.category_id;
-        `;
-  }
-
-  getNearestPointsWithDistance(schema: string) {
+  getNearestPointsWithDistance() {
     return `
         SELECT lng, lat, mark_id AS "id", "categoryId",
             ST_Distance(
             ST_SetSRID(ST_MakePoint($1, $2), 4326)::geography,
             ST_SetSRID(ST_MakePoint(lng, lat), 4326)::geography
             ) AS distance
-        FROM ${schema}.mark
+        FROM ${this.schema}.mark
         ORDER BY distance
         LIMIT 50;
             `;
   }
 
-  checkApproximateDistance(schema: string) {
+  checkApproximateDistance() {
     return `
             SELECT *
-            FROM ${schema}.mark
+            FROM ${this.schema}.mark
             WHERE ST_DWithin(
             ST_SetSRID(ST_MakePoint($1, $2), 4326)::geography,
             ST_SetSRID(ST_MakePoint(lng, lat), 4326)::geography,
@@ -56,14 +52,14 @@ export class CustomSqlQueryService {
         `;
   }
 
-  getDistance(schema: string) {
+  getDistance() {
     return `
         SELECT 
             ST_Distance(
             ST_SetSRID(ST_MakePoint($1, $2), 4326)::geography,
             ST_SetSRID(ST_MakePoint(lng, lat), 4326)::geography
             ) AS distance
-        FROM ${schema}.mark
+        FROM ${this.schema}.mark
         WHERE mark_id = $3
         `;
   }
