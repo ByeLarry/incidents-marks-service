@@ -1,7 +1,7 @@
 import { Injectable, HttpStatus } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { MsgSearchEnum } from '../../libs/enums';
+import { FindOptionsOrder, Repository } from 'typeorm';
+import { CategoriesSortEnum, MsgSearchEnum } from '../../libs/enums';
 import { handleAsyncOperation } from '../../libs/helpers';
 import { SearchService } from '../../libs/services';
 import { MicroserviceResponseStatusFabric } from '../../libs/utils';
@@ -11,6 +11,7 @@ import {
   DeleteCategoryDto,
   UpdateCategoryDto,
   CategoriesStatsDto,
+  CategoriesPaginationDto,
 } from '../dto';
 import { Category } from '../entities';
 
@@ -28,7 +29,25 @@ export class CategoriesService {
     return this.categoryRep.findOne({ where: { id } });
   }
 
-  async findAllCategories() {
+  async getAllCategoriesWithPagination(dto: CategoriesPaginationDto) {
+    return handleAsyncOperation(async () => {
+      const total = await this.categoryRep.count();
+      const categories = await this.categoryRep.find({
+        select: ['id', 'name', 'color', 'createdAt', 'updatedAt'],
+        take: dto.limit,
+        skip: (dto.page - 1) * dto.limit,
+        order: this.getSortOrder(dto.sort),
+      });
+      return {
+        total,
+        page: dto.page,
+        limit: dto.limit,
+        categories,
+      };
+    });
+  }
+
+  async getAllCategories() {
     return handleAsyncOperation(() =>
       this.categoryRep.find({
         select: ['id', 'name', 'color', 'createdAt', 'updatedAt'],
@@ -106,5 +125,24 @@ export class CategoriesService {
 
       return stats;
     });
+  }
+
+  private getSortOrder(
+    sortKey: CategoriesSortEnum,
+  ): FindOptionsOrder<Category> {
+    switch (sortKey) {
+      case CategoriesSortEnum.CREATED_AT_ASC:
+        return {
+          ['createdAt']: 'ASC',
+        };
+      case CategoriesSortEnum.CREATED_AT_DESC:
+        return {
+          ['createdAt']: 'DESC',
+        };
+      default:
+        return {
+          ['createdAt']: 'ASC',
+        };
+    }
   }
 }

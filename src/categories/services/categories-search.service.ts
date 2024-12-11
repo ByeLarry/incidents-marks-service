@@ -44,7 +44,7 @@ export class CategoriesSearchService implements OnApplicationBootstrap {
 
   async reindexSearchEngine() {
     return handleAsyncOperation(async () => {
-      const categories = await this.categoriesService.findAllCategories();
+      const categories = await this.categoriesService.getAllCategories();
       if (!Array.isArray(categories) || categories.length === 0) {
         return MicroserviceResponseStatusFabric.create(HttpStatus.NOT_FOUND);
       }

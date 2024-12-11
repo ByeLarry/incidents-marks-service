@@ -2,6 +2,7 @@ import { Controller } from '@nestjs/common';
 import { MessagePattern, Payload } from '@nestjs/microservices';
 import { MsgCategoriesEnum } from '../../libs/enums';
 import {
+  CategoriesPaginationDto,
   CreateCategoryDto,
   DeleteCategoryDto,
   UpdateCategoryDto,
@@ -13,8 +14,13 @@ export class CategoriesController {
   constructor(private readonly categoriesService: CategoriesService) {}
 
   @MessagePattern(MsgCategoriesEnum.CATEGORIES)
-  findAll() {
-    return this.categoriesService.findAllCategories();
+  getAllCategories() {
+    return this.categoriesService.getAllCategories();
+  }
+
+  @MessagePattern(MsgCategoriesEnum.CATEGORIES_PAGINATION)
+  getAllCategoriesWithPagination(@Payload() dto: CategoriesPaginationDto) {
+    return this.categoriesService.getAllCategoriesWithPagination(dto);
   }
 
   @MessagePattern(MsgCategoriesEnum.CREATE_CATEGORY)
@@ -36,5 +42,4 @@ export class CategoriesController {
   getCategoriesStats() {
     return this.categoriesService.getCategoriesStats();
   }
-
 }
