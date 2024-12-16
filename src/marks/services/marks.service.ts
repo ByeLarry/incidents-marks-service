@@ -13,6 +13,7 @@ import {
   MarkDto,
   VerifyMarkDto,
   CreateMarkDto,
+  DeleteMarkByUserDto,
 } from '../dto';
 import { Mark, Verification } from '../entities';
 
@@ -202,6 +203,25 @@ export class MarksService {
         return MicroserviceResponseStatusFabric.create(HttpStatus.NOT_FOUND);
 
       await queryRunner.manager.delete(Mark, { id });
+      this.searchService.update(mark, MsgSearchEnum.DELETE_MARK);
+
+      return this.createMarkRecvDto(mark);
+    });
+  }
+
+  async deleteMarkByIdAndUserId(dto: DeleteMarkByUserDto) {
+    return this.handleTransaction(async (queryRunner) => {
+      const mark = await queryRunner.manager.findOne(Mark, {
+        where: { id: dto.markId },
+      });
+
+      if (!mark)
+        return MicroserviceResponseStatusFabric.create(HttpStatus.NOT_FOUND);
+
+      if (mark.userId !== dto.userId)
+        return MicroserviceResponseStatusFabric.create(HttpStatus.FORBIDDEN);
+
+      await queryRunner.manager.delete(Mark, { id: dto.markId });
       this.searchService.update(mark, MsgSearchEnum.DELETE_MARK);
 
       return this.createMarkRecvDto(mark);

@@ -8,7 +8,8 @@ export enum MsgMarksEnum {
   GET_VERIFY = 'verify.one',
   CREATE_MARK = 'mark.create',
   GET_ALL_MARKS = 'mark.all',
-  DELETE_MARK = 'mark.delete',
+  DELETE_MARK_BY_ADMIN = 'mark.admin.delete',
+  DELETE_MARK_BY_USER = 'mark.delete',
   SEARCH_MARKS = MsgSearchEnum.SEARCH_MARKS,
-  REINDEX = 'mark.reindex'
+  REINDEX = 'mark.reindex',
 }

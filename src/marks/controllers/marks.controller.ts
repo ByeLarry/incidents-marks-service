@@ -5,6 +5,7 @@ import { VerifyMarkDto } from '../dto/verify-mark.dto';
 import { MarkDto } from '../dto/mark.dto';
 import { CreateMarkDto } from '../dto/create-mark.dto';
 import { MarksService } from '../services';
+import { DeleteMarkByUserDto } from '../dto';
 
 @Controller()
 export class MarksController {
@@ -40,8 +41,13 @@ export class MarksController {
     return this.marksService.getAllMarks();
   }
 
-  @MessagePattern(MsgMarksEnum.DELETE_MARK)
-  deleteMark(@Payload() id: number) {
+  @MessagePattern(MsgMarksEnum.DELETE_MARK_BY_ADMIN)
+  deleteMarkByAdmin(@Payload() id: number) {
     return this.marksService.deleteMarkById(id);
+  }
+
+  @MessagePattern(MsgMarksEnum.DELETE_MARK_BY_USER)
+  deleteMarkByUser(@Payload() data: DeleteMarkByUserDto) {
+    return this.marksService.deleteMarkByIdAndUserId(data);
   }
 }
