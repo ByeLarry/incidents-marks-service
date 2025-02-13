@@ -4,6 +4,7 @@ import { MarksModule } from './marks/marks.module';
 import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { CategoriesModule } from './categories/categories.module';
 import { DB_CONNECTION_CONFIG } from './typeOrm-config';
+import { HealthModule } from './health/health.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { DB_CONNECTION_CONFIG } from './typeOrm-config';
       inject: [ConfigService],
     }),
     CategoriesModule,
+    HealthModule,
   ],
 })
 export class AppModule {}
