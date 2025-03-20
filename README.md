@@ -49,7 +49,7 @@ _Диаграммы можно сохранять и редактировать 
   ![Отношение сущностей (происшествия)](https://github.com/user-attachments/assets/eeb6960d-f783-49f9-b6c7-cffd74f5d544)
 
 - ### Компоненты микросервиса инцидентов
-  ![Компоненты микросервиса инцидентов](https://github.com/user-attachments/assets/e94c41ee-aa3e-465e-8a7f-35c5dee21729)
+  ![Компоненты микросервиса инцидентов](https://github.com/user-attachments/assets/ff644bb2-a922-40ff-9078-86cbc44a89ac)
 
 ## Ссылки
 
