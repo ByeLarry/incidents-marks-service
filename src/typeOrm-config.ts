@@ -17,7 +17,7 @@ export const DB_CONNECTION_CONFIG = {
   entities: [__dirname + '/**/*.entity{.ts,.js}'],
   migrations: [__dirname + '/migrations/*{.ts,.js}'],
   migrationsTableName: 'migrations',
-  synchronize: false,
+  synchronize: true,
 };
 
 export default new DataSource(DB_CONNECTION_CONFIG as DataSourceOptions);
